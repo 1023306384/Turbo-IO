@@ -6,6 +6,8 @@ import {createHash} from 'node:crypto';
 
 // Exact, visually reviewed documentation captures, not a blanket PNG exclusion.
 const reviewedScreenshots = new Map([
+  ['official-addon/docs/home-tabs-glass-light.png', '12c74fe54a48d2f6b4b5371381f7308732f8b35b07465ecf29728f33dbc969b4'],
+  ['official-addon/docs/home-tabs-glass-dark.png', '2f14655122697a4dd0870147fb6bf71417f8dfea82a45670443e2dd1e13c9407'],
   ['official-addon/docs/navigation-search.png', 'd6a4dcb745bd87e67884fa686d87d033d9b557bd70a31cea4fc8098f7935245c'],
   ['official-addon/docs/model-preview.png', '01e013c04f3b0841e4a7ef1ca83af89585154f562c23cfa71698ede373eb4f79'],
   ['official-addon/docs/knowledge-preview.png', 'bb7acde21eddf1c5f83eb02b48cddf2228ad913796fe76f8f5187297a49eb5e7'],

@@ -18,8 +18,8 @@
 
 ## 2. 兼容性与高德依赖
 
-- 官方 App：iOS 雷鸟 AI 眼镜 **1.0.2 / Build 67**，其他二进制约束见[V2构建说明](../README.md#1-兼容性门槛)。未知版本不要跳过检查。
-- 协议默认配置研究于 **StrixOS 1.0.3.15**，不宣称所有固件可用。每次重新生成SID并等待眼镜ACK。
+- 官方 App：iOS 雷鸟 AI 眼镜 **1.0.4 / Build 195** 或 **1.0.2 / Build 67**，其他二进制约束见[V2构建说明](../README.md#1-兼容性门槛)。未知版本不要跳过检查。
+- 协议默认配置研究于 **StrixOS 1.0.3.15**；私用研究版升级 **1.0.4.8** 后收到导航正常反馈，详情见[适配说明](COMPATIBILITY_104.md)。不宣称所有模式及固件均已验收。每次重新生成SID并等待眼镜ACK。
 - Navi **11.2.100**（含地图），Foundation **1.9.1**（非IDFA包），Search **9.8.1**。使用静态库构建进扩展；不能再把相同SDK作为第二套动态库重复注入宿主。
 - 官方来源：[导航SDK下载](https://developer.amap.com/api/ios-navi-sdk/download)、[地图/搜索SDK下载](https://lbs.amap.com/api/ios-sdk/download)。使用前阅读并遵循其许可、隐私及服务要求。本仓库不再分发这些SDK二进制。
 

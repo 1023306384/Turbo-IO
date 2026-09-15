@@ -3,12 +3,12 @@
 #import <objc/message.h>
 #import <mach-o/loader.h>
 #import <dlfcn.h>
+#import "HostCompatibility.h"
 static id NativeController(void){
     // Exact exported stored property, matched to the inspected Runner UUID; no guessed Swift getter ABI.
     void *slot=dlsym(RTLD_DEFAULT,"$s23rayneo_venus_sdk_plugin28AlwaysOnDebugAudioControllerC6sharedACvpZ");Dl_info info={0};if(!slot||!dladdr(slot,&info))return nil;
     const struct mach_header_64 *h=info.dli_fbase;if(!h||h->magic!=MH_MAGIC_64||h->filetype!=MH_EXECUTE)return nil;
-    const uint8_t *p=(const void *)(h+1),*end=p+h->sizeofcmds;BOOL valid=NO;
-    for(uint32_t i=0;i<h->ncmds&&p+sizeof(struct load_command)<=end;i++){const struct load_command *c=(const void *)p;if(c->cmdsize<sizeof(*c)||p+c->cmdsize>end)return nil;if(c->cmd==LC_UUID&&c->cmdsize>=sizeof(struct uuid_command))valid=[[[NSUUID alloc]initWithUUIDBytes:((const struct uuid_command *)c)->uuid].UUIDString isEqual:@"EEEA85E5-4114-313C-B651-73C90A6B5D3C"];p+=c->cmdsize;}
+    BOOL valid=TIOHostImageMatches((const struct mach_header *)h,NSBundle.mainBundle.infoDictionary);
     if(!valid)return nil;Class cls=NSClassFromString(@"rayneo_venus_sdk_plugin.AlwaysOnDebugAudioController");id obj=*(__unsafe_unretained id *)slot;return obj&&cls&&object_getClass(obj)==cls?obj:nil;
 }
 NSDictionary *TIOAOStatus(void){
