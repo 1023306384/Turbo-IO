@@ -4,7 +4,7 @@
 
 [返回项目首页](../README.md) · [验证记录](docs/VALIDATION.md) · [非商业许可](../LICENSE)
 
-**获取官方 App：[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)**。将此链接、仓库地址和[首页提示词](../README.md#让-claude-code--codex-帮你接入)一起交给 Claude Code / Codex，即可按本教程引导检查、构建与配置。页面可能提供更新版本，仍需通过下方SHA校验；不是不经验证就能合并。详见[完整AI接入说明](../docs/AI_SETUP.md)。
+**获取 Android 官方 App：[雷鸟 AI Android 官方下载入口](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)**。将此链接、仓库地址和[首页提示词](../README.md#让-claude-code--codex-帮你接入)一起交给 Claude Code / Codex，即可按本教程引导检查、构建与配置。页面可能提供更新版本，仍需通过下方SHA校验；不是不经验证就能合并。详见[完整AI接入说明](../docs/AI_SETUP.md)。
 
 ## 1. 可以做什么
 
