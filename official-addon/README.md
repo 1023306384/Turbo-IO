@@ -8,6 +8,8 @@
 
 ## V2 增加了什么
 
+官方 App 获取入口：[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)。可将此链接、本仓库和[首页提示词](../README.md#让-claude-code--codex-帮你接入)交给 Claude Code / Codex，按[分平台接入说明](../docs/AI_SETUP.md)检查和构建。**商店安装不等于已取得可合并的未加密Runner.app**，缺少兼容输入时先做预览，不跳过下面的门槛。
+
 ### 新增适配：官方 1.0.4（195）+ Strix OS 1.0.4.8
 
 保留旧版 1.0.2（67），新增精确版本 / Build / Runner UUID 校验；不放宽未知包限制。非越狱 iPhone Air 的个人签名研究版已获得升级后语音、自有模型与导航正常的用户反馈。新版底栏识别“回忆、探索”，第五项 TurboIO 使用深浅色毛玻璃。详见[版本适配与验收说明](docs/COMPATIBILITY_104.md)。
@@ -70,7 +72,7 @@ xcrun simctl launch booted io.turboio.research.preview
 
 ### 1. 兼容性门槛
 
-**适配对象：iOS「雷鸟 AI 眼镜」1.0.4（Build 195）、1.0.2（Build 67）。其他官方版本及 Android 尚未适配。** 这里的版本指官方 App，不是眼镜固件，也不是 Turbo IO V2 的版本号。
+**本目录适配对象：iOS「雷鸟 AI 眼镜」1.0.4（Build 195）、1.0.2（Build 67）。其他iOS官方版本尚未适配；Android使用独立的 [android-addon](../android-addon/README.md)，不能套用此工具。** 这里的版本指官方 App，不是眼镜固件，也不是 Turbo IO V2 的版本号。
 
 - Bundle ID 为 `com.rayneo.venus.pub`；`1.0.4 / 195` 对应 Runner UUID `261c8e78f9553d7d85f713b9082972cf`，`1.0.2 / 67` 对应 `eeea85e54114313cb65173c90a6b5d3c`。
 - 合并前核对源 App 的 `Info.plist` 中版本 / Build 组合。相同版本号仍需匹配对应 UUID；其他官方版本需要重新适配，不要修改版本号或跳过检查强行合并。

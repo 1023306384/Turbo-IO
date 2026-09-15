@@ -1,6 +1,8 @@
 # 用技能引导安装 Turbo IO
 
-仓库提供标准 Agent Skills 目录 `skills/turbo-io`，供 Codex 与 Claude Code 读取。用途是非商业学习研究的环境检查、源码获取、Web 预览、iOS 编译配置和 Codex bridge 接入，不包含密钥、IPA，也不会绕过签名与用户授权。许可见 [LICENSING.md](LICENSING.md)。
+仓库提供标准 Agent Skills 目录 `skills/turbo-io`，供 Codex 与 Claude Code 读取。用途是非商业学习研究的环境检查、源码获取、Web预览、iOS独立SDK、iOS/Android官方扩展构建配置和Codex bridge接入，不包含密钥、IPA/APK，也不会绕过签名与用户授权。许可见 [LICENSING.md](LICENSING.md)。
+
+不想先安装技能，可直接复制[首页提示词](../README.md#让-claude-code--codex-帮你接入)，把[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)和仓库地址交给助手；完整流程见 [AI_SETUP.md](AI_SETUP.md)。技能与直接提示词是两种引导方式，不需要同时使用。
 
 ## 一行安装
 
@@ -33,8 +35,8 @@ Claude Code 可显式使用 `/turbo-io`；Codex 可在技能选择器选中它�
 
 1. 核对当前目录与已有改动；没有源码时克隆到新目录，不覆盖旧工程。
 2. 默认先启动 `node display-observer/server.mjs --no-proxy`，验证 `http://127.0.0.1:8790/`。不需要眼镜、iproxy 或云端 Key。演示画面不冒充真实镜片画面。
-3. 明确要 iOS 时再检查 macOS、Xcode、XcodeGen，调用现有启动脚本；模拟器与真机分开验收。
-4. 真机由使用者提供自己的签名 Team；切换官方绑定时先官方解绑、蓝牙忽略、蓝灯配对，日常重连不重复重置。
+3. 明确平台后按对应教程构建：V1使用启动脚本，iOS官方扩展使用自己的构建/合并工具，Android使用JDK/SDK及build/package脚本；不交叉使用。
+4. 使用者提供自己的签名Team或keystore。只有V1切换官方绑定才按解绑/忽略/配对流程；宿主扩展沿用官方连接。Android非Root设备已有用户验收，仍需核对本次设备与配置结果。
 5. 按需配置 ASR、模型与电脑 bridge，Key 在自己的 App 中填写，不粘贴到聊天、源码或提交中。
 
 **技能安装成功不等于 App 已装到 iPhone，更不等于眼镜已认证、云接口已通过。** 助手应明确报告每一步实际结果与用户签名、凭据或物理操作门槛。技能不提供自动批准电脑高风险操作的权限。

@@ -31,6 +31,8 @@ node display-observer/server.mjs --no-proxy
 
 ## B. iOS 模拟器
 
+本节及C节指V1独立客户端。用户要官方App内扩展时跳到E节，不使用V1脚本替代。
+
 ```sh
 node scripts/start.mjs --local
 ```
@@ -56,6 +58,15 @@ node scripts/start.mjs --device
 - bridge 的目标工作区由用户选择。令牌应为新生成的独立随机值，保存在仓库外的私有文件（0600），不要放进命令行、源码或聊天；手机端通过安全输入配置。默认回环/只读；手机连接使用用户可信的 HTTPS/TLS 入口，不能直接公开裸服务或去掉鉴权。
 - 用用户同意的无文件读写随机码任务验证：任务 accepted → completed → 手机接收 → 眼镜通知，各步分别确认。模型只有 message/status/stop，不能自动批准写操作。遇到不确定响应沿用 requestId，不重复创造任务。
 - Claude Code 使用这个技能帮助安装项目，和“眼镜已经接通 Claude Code 后端”是两件事。后者尚需实现适配。
+
+## E. 官方 App 扩展（iOS / Android）
+
+先读源码 `docs/AI_SETUP.md` 和对应平台README。官方入口为 <https://rayneo.cn/commonPage/venus/appDownload/index_m.html>，只按页面正常渠道取得用户有权使用的输入；不承诺最新包兼容，不绕过加密或版本白名单。
+
+- iOS：`official-addon/README.md` 的构建/零密钥预览→兼容Runner.app检查→用户自己的签名与设备授权→本地合并。加密或未知输入则停止合并，可继续无包预览。导航另有固定SDK依赖。
+- Android：设置用户SDK路径，`bash android-addon/build.sh`→合法兼容APK→`node android-addon/package.mjs /path/to/source.apk`→自己的keystore签名。版本和SHA以该脚本为准；原签名与新签名不同，不能自动卸载原App解决。
+- 保留官方配对与ASR；不要求重复解绑，也不为官方扩展配置V1的独立云ASR。用户在扩展界面填自己的模型/搜索Key。
+- Android非Root和iOS非越狱均有用户可用确认，仍需区分当前机型、配置与导航功能结果。不要自动开启长录音、长期导航或新的公网bridge；按用户选定目标做短测试。
 
 ## 验证与交还
 
