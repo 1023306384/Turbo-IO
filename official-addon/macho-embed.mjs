@@ -4,6 +4,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {inspectedHost} from './host-compatibility.mjs';
 
 export function inspectMachO(bytes) {
   if(bytes.length<32||bytes.readUInt32LE(0)!==0xfeedfacf||bytes.readUInt32LE(4)!==0x100000c)throw Error('Expected thin arm64 Mach-O');
@@ -55,9 +56,8 @@ function prepare() {
   if(out===source||out.startsWith(source+path.sep)||fs.existsSync(out))throw Error('Output must be a new separate app directory');
   const plist=p=>JSON.parse(execFileSync('plutil',['-convert','json','-o','-',p],{encoding:'utf8'}));
   const info=plist(path.join(source,'Info.plist'));
-  if(info.CFBundleIdentifier!=='com.rayneo.venus.pub'||info.CFBundleShortVersionString!=='1.0.2'||String(info.CFBundleVersion)!=='67'||info.CFBundleExecutable!=='Runner')throw Error('Unsupported official source app');
   const exe=path.join(source,'Runner'),original=fs.readFileSync(exe),header=inspectMachO(original);
-  if(header.uuid!=='eeea85e54114313cb65173c90a6b5d3c')throw Error('Unsupported Runner UUID');
+  if(!inspectedHost(info,header.uuid))throw Error('Unsupported official source app version/build/UUID');
   const embedded=fs.readFileSync(addon),addonInfo=inspectMachO(embedded);
   if(addonInfo.fileType!==6||addonInfo.installName!=='@rpath/TurboIOPrivateAddon.dylib'||addonInfo.encrypted||addonInfo.dependencies.some(x=>/\/var\/jb\/|frida|ellekit|substrate/i.test(x)))throw Error('Use the embedded addon build, with no jailbreak runtime dependency');
   if(!embedded.includes(Buffer.from(bundle+'\0')))throw Error('Build addon for exactly the requested Bundle ID');

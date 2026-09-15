@@ -388,15 +388,13 @@ static BOOL Signature(Class cls,NSString *name,NSUInteger argc,const char *retur
     char *r=method_copyReturnType(m);BOOL ok=r&&r[0]==returnType[0];free(r);
     for(NSUInteger i=2;i<argc;i++){char *t=method_copyArgumentType(m,(unsigned)i);NSString *allowed=types[i-2];if(!t||![allowed containsString:[NSString stringWithFormat:@"%c",t[0]]])ok=NO;free(t);}return ok;
 }
+#import "HostCompatibility.h"
 static BOOL VersionMatches(void) {
-    if(![NSBundle.mainBundle.bundleIdentifier isEqual:TargetBundle]||![[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]isEqual:@"1.0.2"]||![[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]isEqual:@"67"])return NO;
+    if(![NSBundle.mainBundle.bundleIdentifier isEqual:TargetBundle])return NO;
     const struct mach_header *h=NULL;
     const char *executable=NSBundle.mainBundle.executablePath.fileSystemRepresentation;
     for(uint32_t i=0;i<_dyld_image_count();i++){const char *name=_dyld_get_image_name(i);if(name&&executable&&strcmp(name,executable)==0){h=_dyld_get_image_header(i);break;}}
-    if(!h||h->magic!=MH_MAGIC_64||h->ncmds>1024)return NO;
-    const uint8_t expected[16]={0xee,0xea,0x85,0xe5,0x41,0x14,0x31,0x3c,0xb6,0x51,0x73,0xc9,0x0a,0x6b,0x5d,0x3c};
-    const uint8_t *p=(const uint8_t *)h+sizeof(struct mach_header_64),*end=p+h->sizeofcmds;
-    for(uint32_t i=0;i<h->ncmds;i++){if(p+sizeof(struct load_command)>end)return NO;const struct load_command *c=(const struct load_command *)p;if(c->cmdsize<8||p+c->cmdsize>end)return NO;if(c->cmd==LC_UUID&&c->cmdsize>=sizeof(struct uuid_command))return memcmp(((const struct uuid_command *)c)->uuid,expected,16)==0;p+=c->cmdsize;}return NO;
+    return TIOHostImageMatches(h,NSBundle.mainBundle.infoDictionary);
 }
 static void AddEntry(void) {
     UIViewController *top=TopController();UIWindow *window=top.view.window;if(!window)return;

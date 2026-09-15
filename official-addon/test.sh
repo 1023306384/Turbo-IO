@@ -2,6 +2,9 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation HostCompatibilityTests.m -o build/host-compatibility-tests
+./build/host-compatibility-tests
+node --test host-compatibility.test.mjs
 xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation NavigationModes.m NavigationModesTests.m -o build/navigation-modes-tests
 ./build/navigation-modes-tests
 xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation Profile.m ProfileTests.m -o build/profile-tests

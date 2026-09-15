@@ -1,4 +1,5 @@
 #import "ProtocolContext.h"
+#import "HostCompatibility.h"
 #import <CommonCrypto/CommonDigest.h>
 #include <math.h>
 static __weak id CurrentPlugin;
@@ -46,8 +47,9 @@ static NSString *Path(NSString *kind,NSString *device){
 NSDictionary *TIOProtocolTemplate(NSString *kind,NSString *device){NSString *p=Path(kind,device);if(!p)return nil;NSDictionary *a=[NSFileManager.defaultManager attributesOfItemAtPath:p error:nil];if(![a[NSFileType] isEqual:NSFileTypeRegular]||[a[NSFileSize] unsignedIntegerValue]>8192)return nil;NSData *d=[NSData dataWithContentsOfFile:p];id j=d?[NSJSONSerialization JSONObjectWithData:d options:0 error:nil]:nil;if(![j isKindOfClass:NSDictionary.class]||![j[@"schema"] isEqual:@1])return nil;return TIOProtocolSanitize(kind,j[@"template"]);}
 BOOL TIOProtocolSaveTemplate(NSString *kind,NSString *device,NSDictionary *value){NSDictionary *v=TIOProtocolSanitize(kind,value);NSString *p=Path(kind,device);if(!v||!p)return NO;[NSFileManager.defaultManager createDirectoryAtPath:p.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:nil];NSData *d=[NSJSONSerialization dataWithJSONObject:@{@"schema":@1,@"template":v} options:0 error:nil];BOOL ok=[d writeToFile:p options:NSDataWritingAtomic error:nil];if(ok)[NSFileManager.defaultManager setAttributes:@{NSFilePosixPermissions:@0600} ofItemAtPath:p error:nil];return ok;}
 NSDictionary *TIOProtocolDefaultSubtitle(void){
-    NSDictionary *i=NSBundle.mainBundle.infoDictionary;if(![i[@"CFBundleIdentifier"] isEqual:@"com.rayneo.venus.pub"]||![i[@"CFBundleShortVersionString"] isEqual:@"1.0.2"]||![i[@"CFBundleVersion"] isEqual:@"67"])return nil;
-    // Verified on StrixOS 1.0.3.15. Not an assertion of compatibility with a
+    NSDictionary *i=NSBundle.mainBundle.infoDictionary;if(![i[@"CFBundleIdentifier"] isEqual:@"com.rayneo.venus.pub"]||!TIOHostExpectedUUID(i))return nil;
+    // Verified with the private builds on StrixOS 1.0.3.15 and 1.0.4.8.
+    // Not an assertion of compatibility with a
     // different firmware: the fresh preview ACK is mandatory every session.
     return @{@"config":@{@"font_size":@2,@"content_width":@100,@"max_lines":@5,@"position":@"center",@"is_display":@YES,@"straight_view":@"original"}};
 }

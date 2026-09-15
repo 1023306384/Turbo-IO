@@ -1,5 +1,6 @@
 #import "HomeTabBridge.h"
 #import "HomeTabLayout.h"
+#import <QuartzCore/QuartzCore.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
 
@@ -11,6 +12,9 @@
 @property(nonatomic,weak) UIButton *fallback;
 @property(nonatomic,copy) void (^openResearch)(void);
 @property(nonatomic) UIView *bar,*selection;
+@property(nonatomic) UIVisualEffectView *glass;
+@property(nonatomic) CAGradientLayer *glassSheen;
+@property(nonatomic) NSString *appearanceKey;
 @property(nonatomic) NSArray<UIButton *> *buttons;
 @property(nonatomic) NSArray *targets;
 @property(nonatomic) NSArray<NSDictionary *> *items;
@@ -19,6 +23,7 @@
 @property(nonatomic) BOOL queued,keyboardVisible,enabled;
 @property(nonatomic) NSString *state,*lastWritten;
 @property(nonatomic) NSUInteger treeCount,activations;
+@property(nonatomic) NSUInteger semanticsCount;
 @property(nonatomic) NSUInteger ensureAttempts;
 @property(nonatomic) NSTimeInterval lastEnsure;
 - (void)refresh;
@@ -65,12 +70,33 @@ static void Walk(id obj,UIWindow *window,NSMutableArray *hits,NSHashTable *seen,
 - (void)keyboard:(NSNotification *)n{CGRect r=[n.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];UIWindow *w=HomeWindow();CGRect local=[w convertRect:r fromWindow:nil];self.keyboardVisible=w&&CGRectIntersectsRect(local,w.bounds)&&local.size.height>80;[self refresh];}
 - (void)hide:(NSString *)state fallback:(BOOL)fallback{self.state=state;self.bar.hidden=YES;self.targets=nil;self.fallback.hidden=!fallback;[self writeStatus];}
 - (void)makeBar:(UIWindow *)w{
-    if(!self.bar){self.bar=[UIView new];self.bar.accessibilityIdentifier=@"turboio-official-home-tabs";self.bar.layer.cornerRadius=29;self.bar.clipsToBounds=YES;
-        self.selection=[UIView new];self.selection.layer.cornerRadius=24;self.selection.userInteractionEnabled=NO;[self.bar addSubview:self.selection];
+    if(!self.bar){self.bar=[UIView new];self.bar.accessibilityIdentifier=@"turboio-official-home-tabs";self.bar.layer.cornerRadius=29;self.bar.layer.cornerCurve=kCACornerCurveContinuous;self.bar.backgroundColor=UIColor.clearColor;
+        // Frost the Flutter capsule underneath rather than making the entire
+        // bar translucent (which would also fade the labels and touch targets).
+        self.glass=[[UIVisualEffectView alloc]initWithEffect:nil];self.glass.userInteractionEnabled=NO;self.glass.accessibilityIdentifier=@"turboio-home-glass";self.glass.layer.cornerRadius=29;self.glass.layer.cornerCurve=kCACornerCurveContinuous;self.glass.clipsToBounds=YES;[self.bar addSubview:self.glass];
+        self.glassSheen=[CAGradientLayer layer];self.glassSheen.startPoint=CGPointMake(0.2,0);self.glassSheen.endPoint=CGPointMake(0.8,1);[self.glass.contentView.layer addSublayer:self.glassSheen];
+        self.selection=[UIView new];self.selection.layer.cornerRadius=24;self.selection.layer.cornerCurve=kCACornerCurveContinuous;self.selection.userInteractionEnabled=NO;[self.bar addSubview:self.selection];
         NSArray *names=@[@"RayNeo",@"眼镜",@"记忆",@"发现",@"TurboIO"],*icons=@[@"sparkles",@"eyeglasses",@"atom",@"safari",@"bolt.horizontal.circle"];
         NSMutableArray *buttons=[NSMutableArray new];for(NSUInteger i=0;i<5;i++){UIButton *b=[UIButton buttonWithType:UIButtonTypeSystem];UIButtonConfiguration *c=UIButtonConfiguration.plainButtonConfiguration;c.title=names[i];c.image=[UIImage systemImageNamed:icons[i] withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:21 weight:UIImageSymbolWeightRegular]];c.imagePlacement=NSDirectionalRectEdgeTop;c.imagePadding=3;c.contentInsets=NSDirectionalEdgeInsetsMake(5,0,4,0);c.titleTextAttributesTransformer=^NSDictionary *(NSDictionary *input){NSMutableDictionary *a=[input mutableCopy];a[NSFontAttributeName]=[UIFont systemFontOfSize:10.5 weight:UIFontWeightMedium];return a;};b.configuration=c;b.tag=i;b.accessibilityLabel=names[i];b.accessibilityIdentifier=[@"home-tab-" stringByAppendingString:names[i]];[b addTarget:self action:@selector(tap:) forControlEvents:UIControlEventTouchUpInside];[self.bar addSubview:b];[buttons addObject:b];}self.buttons=buttons;
         UILongPressGestureRecognizer *restore=[[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(restore:)];restore.minimumPressDuration=1.5;[self.buttons.lastObject addGestureRecognizer:restore];
     }if(self.bar.superview!=w)[w addSubview:self.bar];[w bringSubviewToFront:self.bar];
+}
+- (void)styleGlass:(BOOL)dark{
+    BOOL reduced=UIAccessibilityIsReduceTransparencyEnabled(),contrast=UIAccessibilityDarkerSystemColorsEnabled();
+    NSString *key=[NSString stringWithFormat:@"%d-%d-%d",dark,reduced,contrast];
+    if(![self.appearanceKey isEqual:key]){
+        self.appearanceKey=key;
+        self.glass.effect=reduced?nil:[UIBlurEffect effectWithStyle:dark?UIBlurEffectStyleSystemMaterialDark:UIBlurEffectStyleSystemMaterialLight];
+        self.glass.contentView.backgroundColor=reduced?(dark?[UIColor colorWithWhite:0.12 alpha:1]:[UIColor colorWithWhite:0.94 alpha:1]):UIColor.clearColor;
+        self.glassSheen.hidden=reduced;
+        self.glassSheen.colors=dark?@[(id)[UIColor colorWithWhite:1 alpha:0.13].CGColor,(id)[UIColor colorWithWhite:1 alpha:0.02].CGColor,(id)[UIColor colorWithRed:0 green:0.3 blue:0.23 alpha:0.12].CGColor]:@[(id)[UIColor colorWithWhite:1 alpha:0.48].CGColor,(id)[UIColor colorWithWhite:1 alpha:0.08].CGColor,(id)[UIColor colorWithRed:0.7 green:0.91 blue:0.83 alpha:0.16].CGColor];
+        self.glass.layer.borderWidth=contrast?1.2:0.75;self.glass.layer.borderColor=(dark?[UIColor colorWithWhite:1 alpha:0.24]:[UIColor colorWithWhite:1 alpha:0.9]).CGColor;
+        self.bar.layer.shadowColor=UIColor.blackColor.CGColor;self.bar.layer.shadowOpacity=dark?0.26:0.10;self.bar.layer.shadowRadius=14;self.bar.layer.shadowOffset=CGSizeMake(0,5);
+        self.selection.backgroundColor=dark?[UIColor colorWithRed:0.2 green:0.9 blue:0.68 alpha:0.18]:[UIColor colorWithRed:0.12 green:0.68 blue:0.5 alpha:0.12];
+        self.selection.layer.borderWidth=0.6;self.selection.layer.borderColor=(dark?[UIColor colorWithRed:0.5 green:1 blue:0.8 alpha:0.25]:[UIColor colorWithRed:0.12 green:0.6 blue:0.44 alpha:0.15]).CGColor;
+    }
+    self.glass.frame=self.bar.bounds;
+    [CATransaction begin];[CATransaction setDisableActions:YES];self.glassSheen.frame=self.bar.bounds;self.bar.layer.shadowPath=[UIBezierPath bezierPathWithRoundedRect:self.bar.bounds cornerRadius:29].CGPath;[CATransaction commit];
 }
 - (void)refresh{
     UIWindow *w=HomeWindow();UIViewController *root=w.rootViewController;
@@ -82,9 +108,12 @@ static void Walk(id obj,UIWindow *window,NSMutableArray *hits,NSHashTable *seen,
     @try{if([flutter respondsToSelector:NSSelectorFromString(@"engine")]){id engine=((id(*)(id,SEL))objc_msgSend)(flutter,NSSelectorFromString(@"engine"));SEL ensure=NSSelectorFromString(@"ensureSemanticsEnabled");NSTimeInterval now=NSProcessInfo.processInfo.systemUptime;
         // The initial engine/view attachment can reset semantics after launch.
         // Retry only a cold, empty tree, at most ten times per foreground.
-        BOOL coldRetry=self.treeCount<5&&self.ensureAttempts<10&&now-self.lastEnsure>=2;
+        BOOL coldRetry=self.semanticsCount==0&&self.ensureAttempts<10&&now-self.lastEnsure>=2;
         if(engine&&[engine respondsToSelector:ensure]&&(![self.engines containsObject:engine]||coldRetry)){[self.engines addObject:engine];self.lastEnsure=now;self.ensureAttempts++;((void(*)(id,SEL))objc_msgSend)(engine,ensure);}}}@catch(NSException *e){}
-    NSMutableArray *hits=[NSMutableArray new];NSUInteger count=0;Walk(flutter.view,w,hits,[NSHashTable hashTableWithOptions:NSPointerFunctionsObjectPointerPersonality],0,&count,0);self.treeCount=count;
+    NSMutableArray *hits=[NSMutableArray new];NSUInteger count=0;NSHashTable *walked=[NSHashTable hashTableWithOptions:NSPointerFunctionsObjectPointerPersonality];Walk(flutter.view,w,hits,walked,0,&count,0);self.treeCount=count;
+    // Native decoration is not proof that Flutter has published semantics.
+    // Keep the existing bounded cold-start retry even with a richer view tree.
+    self.semanticsCount=0;for(id node in walked)if([NSStringFromClass([node class]) containsString:@"Semantics"])self.semanticsCount++;
     // Some Flutter containers enumerate labels separately. Resolve the public
     // container chain too; never infer ownership merely from matching frames.
     NSMapTable *byObject=[NSMapTable mapTableWithKeyOptions:NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
@@ -104,9 +133,14 @@ static void Walk(id obj,UIWindow *window,NSMutableArray *hits,NSHashTable *seen,
     if(!layout){[self hide:@"等待完整的官方四项导航；未覆盖底栏" fallback:YES];return;}
     [self makeBar:w];self.bar.frame=CGRectMake([layout[@"x"] doubleValue],[layout[@"y"] doubleValue],[layout[@"width"] doubleValue],[layout[@"height"] doubleValue]);
     self.targets=[layout[@"items"] valueForKey:@"object"];self.bar.hidden=NO;self.fallback.hidden=YES;self.state=@"官方四项 + TurboIO";
-    BOOL dark=flutter.traitCollection.userInterfaceStyle==UIUserInterfaceStyleDark;self.bar.backgroundColor=dark?[UIColor colorWithWhite:0.11 alpha:1]:[UIColor colorWithWhite:0.95 alpha:1];self.selection.backgroundColor=dark?[UIColor colorWithWhite:0.22 alpha:1]:[UIColor colorWithWhite:0.86 alpha:1];
+    for(NSUInteger i=0;i<4;i++){
+        UIButton *button=self.buttons[i];NSString *name=layout[@"items"][i][@"name"];
+        if(![button.configuration.title isEqual:name]){UIButtonConfiguration *config=[button.configuration copy];config.title=name;button.configuration=config;}
+        button.accessibilityLabel=name;button.accessibilityIdentifier=[@"home-tab-" stringByAppendingString:name];
+    }
+    BOOL dark=flutter.traitCollection.userInterfaceStyle==UIUserInterfaceStyleDark;[self styleGlass:dark];
     CGFloat width=self.bar.bounds.size.width/5;self.selection.hidden=YES;
-    for(NSUInteger i=0;i<5;i++){UIButton *button=self.buttons[i];button.frame=CGRectMake(i*width,0,width,58);BOOL selected=i<4&&[layout[@"items"][i][@"selected"] boolValue];button.accessibilityTraits=UIAccessibilityTraitButton|(selected?UIAccessibilityTraitSelected:0);button.tintColor=selected?[UIColor colorWithRed:0 green:0.68 blue:0.50 alpha:1]:(dark?UIColor.lightTextColor:UIColor.darkGrayColor);if(selected){self.selection.hidden=NO;self.selection.frame=CGRectMake(i*width+3,5,width-6,48);}}
+    for(NSUInteger i=0;i<5;i++){UIButton *button=self.buttons[i];button.frame=CGRectMake(i*width,0,width,58);BOOL selected=i<4&&[layout[@"items"][i][@"selected"] boolValue];button.accessibilityTraits=UIAccessibilityTraitButton|(selected?UIAccessibilityTraitSelected:0);button.tintColor=selected?(dark?[UIColor colorWithRed:0.48 green:1 blue:0.78 alpha:1]:[UIColor colorWithRed:0 green:0.39 blue:0.29 alpha:1]):(dark?[UIColor colorWithWhite:0.88 alpha:1]:[UIColor colorWithWhite:0.25 alpha:1]);if(selected){self.selection.hidden=NO;self.selection.frame=CGRectMake(i*width+3,5,width-6,48);}}
     [self writeStatus];
 }
 - (void)tap:(UIButton *)button{
@@ -116,7 +150,7 @@ static void Walk(id obj,UIWindow *window,NSMutableArray *hits,NSHashTable *seen,
     if(!result){self.enabled=NO;[self hide:@"官方点击未确认，已恢复官方底栏" fallback:YES];return;}self.activations++;[self schedule];
 }
 - (void)restore:(UILongPressGestureRecognizer *)g{if(g.state==UIGestureRecognizerStateBegan){self.enabled=NO;[self hide:@"已临时恢复官方底栏（重启恢复扩展）" fallback:YES];}}
-- (NSDictionary *)status{return @{@"revision":@"home-tabs-v4-cold-start",@"ensureAttempts":@(self.ensureAttempts),@"state":self.state?:@"",@"visible":@(self.bar&&!self.bar.hidden),@"treeNodes":@(self.treeCount),@"tabs":self.items?:@[],@"activations":@(self.activations),@"implementation":@"native accessibility navigation adapter"};}
+- (NSDictionary *)status{return @{@"revision":@"home-tabs-v6-frosted-glass",@"appearance":self.appearanceKey?:@"",@"ensureAttempts":@(self.ensureAttempts),@"state":self.state?:@"",@"visible":@(self.bar&&!self.bar.hidden),@"treeNodes":@(self.treeCount),@"tabs":self.items?:@[],@"activations":@(self.activations),@"implementation":@"native accessibility navigation adapter"};}
 - (void)writeStatus{NSData *data=[NSJSONSerialization dataWithJSONObject:[self status] options:NSJSONWritingSortedKeys error:nil];NSString *signature=[[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];if(!signature||[signature isEqual:self.lastWritten])return;self.lastWritten=signature;NSString *path=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/TurboIOPrivateAddon/HomeTabs-status.json"];[NSFileManager.defaultManager createDirectoryAtPath:path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:nil];[data writeToFile:path options:NSDataWritingAtomic error:nil];[NSFileManager.defaultManager setAttributes:@{NSFilePosixPermissions:@0600} ofItemAtPath:path error:nil];}
 @end
 void TIOStartHomeTabBridge(UIButton *fallback,void (^openResearch)(void)){
