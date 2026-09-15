@@ -1,53 +1,32 @@
 # Turbo IO · 雷鸟 iO / RayNeo iO 非官方 SDK
 
-## 2026-09-15 适配更新：官方 App 1.0.4 + Strix OS 1.0.4.8
+面向开发者的智能眼镜 SDK 与官方 App 扩展研究项目：自有模型、搜索、录音导出、Agent 与眼镜导航。**不是给小白直接安装的成品 App。**
 
-V2 官方 App 扩展新增 **iOS 1.0.4（Build 195）** 支持，保留 1.0.2（Build 67）。个人签名研究版在**非越狱 iPhone Air + Strix OS 1.0.4.8** 上完成升级后的官方语音、自有模型对话和导航回归，用户反馈正常；不代表每个出行方式、所有功能或长期后台均已验收。
+仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。只发布源码与明确列出的依赖，**不提供 IPA / APK、预签名 App、个人密钥或测试账号**。
 
-底栏适配新版 **RayNeo / 眼镜 / 回忆 / 探索 / TurboIO**，换为深浅色自适应毛玻璃，并修正冷启动语义树等待。公开源码保留空白个人资料和用户自行配置的服务，不带维护者私有配置。
+## 先选开发路线
 
-→ **[适配范围、升级方法、毛玻璃预览与排错](official-addon/docs/COMPATIBILITY_104.md)**。本次仍只发布非商业研究源码，**不提供 IPA、固件、密钥或签名材料**。
-
-## 新增：高德步行 / 骑行 / 驾车导航 → 雷鸟 iO 眼镜文字指引
-
-V2 增加手机地图搜索、单击选起终点、缩放、三种出行方式各自的路线规划与模拟，并把转向、距离和道路文字持续送到眼镜字幕页面。**不是把手机地图投屏，也不是在眼镜安装高德 App。**
-
-入口：**雷鸟 App → TurboIO → 资料 → 步行 / 骑行 / 驾车导航**。先配置自己的高德 iOS Key，选择出行方式，再搜索/选点 → 规划路线 → 开始模拟 → 开启眼镜字幕显示。正常连接后不再要求每次先手动操作官方实时字幕。
-
-**先看边界：眼镜常亮字幕当前只开放模拟验收，4分钟保护；手机三种方式的实时导航仅前台，户外、长时间后台和全固件兼容尚未完成验收。** 私用前身已获得免重复采样镜片显示确认；搜索/选点及三模式切换通过本机测试，新增骑行/驾车的在线算路和镜片效果未真机验收，欢迎开发者共同测试。它是开发者研究能力，不是可依赖的成品出行导航。
-
-→ **[导航完整教程：SDK依赖、Key配置、编译签名、使用与排错](official-addon/docs/NAVIGATION.md)**
-
-公开源码不含维护者的高德/模型/搜索 Key、手机数据或预签名 IPA。导航是可选构建：高德SDK从官方获取、固定版本校验，不夹带修改版官方 App。
-
-## V2 源码公开：官方 App 扩展研究版
-
-**第二版已加入 [`official-addon/`](official-addon/README.md)：在使用者自行准备的兼容官方 App 副本中增加 TurboIO 功能。仅供开发者学习、研究与非商业使用，未经授权禁止商用。** 沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，不是允许任意商用的 MIT / OSI 开源许可。
-
-| 路线 | 定位 | 入口 |
+| 路线 | 适合什么需求 | 使用文档 |
 | --- | --- | --- |
-| V1 独立 SDK | 独立配对/连接的 SDK 与示例 iOS App，保留原有代码和文档 | 本页下方 |
-| V2 官方 App 扩展 | 保留官方连接/ASR，在其内加入自有文字模型、搜索/新闻提词器、导出、Agent 与知识库研究入口 | [V2 完整使用说明](official-addon/README.md) |
+| iOS 独立 SDK（V1） | 自己配对、连接眼镜，研究完整客户端 | [本页快速开始](#快速开始) |
+| iOS 官方 App 扩展（V2） | 保留官方连接/ASR，加入模型、导出、新闻、导航 | [iOS 扩展教程](official-addon/README.md) |
+| **Android 官方 App 扩展** | 保留 Android 官方流程，加入模型、TinyFish、录音导出、真实/模拟导航 | **[Android 编译、配置与导航教程](android-addon/README.md)** |
 
-V2 还增加了**程序内可编辑的个人资料与提示词**，默认不含任何人的身份；模型 Key、搜索 Key 和知识库连接由使用者自己配置。
+**别混用配对说明：** V1 切换客户端前要先在官方 App 解绑、在系统蓝牙忽略设备；iOS / Android 官方扩展运行在宿主内，沿用宿主连接，不需要为扩展反复解绑。不能同时让独立客户端和官方宿主争抢连接。
 
-### V2 兼容的官方 App 版本
+## 最新进展 · 2026-09-15
 
-**当前适配 iOS「雷鸟 AI 眼镜」1.0.4（Build 195）及 1.0.2（Build 67）。** 这是官方 App 的版本，不是 Turbo IO 的版本或眼镜固件版本。
+- **Android 源码新增公开**：兼容官方 Android 1.0.4（195），模型/搜索/录音导出和路线文字已有 Root 研究机用户确认。模拟导航支持暂停、1/2/4/8倍速，自动测试通过，新增模拟镜片效果待验收。非 Root 重签包尚未完成验收，不等同于可直接安装的 Android 成品。
+- **iOS 1.0.4 + Strix OS 1.0.4.8**：保留 iOS 1.0.2 支持；非越狱 iPhone 上个人签名研究版的语音、自有模型与导航回归正常。新增自适应毛玻璃 TurboIO 底栏。[兼容性与预览](official-addon/docs/COMPATIBILITY_104.md)
+- **导航**：三种出行方式、地图搜索和眼镜文字指引，不是地图投屏。两端实现与验收不同，当前均保留前台/4分钟显示等研究限制。[iOS 导航](official-addon/docs/NAVIGATION.md) · [Android 导航](android-addon/README.md#5-导航怎么用)
 
-| 检查项 | 当前适配目标 |
-| --- | --- |
-| 官方 App | iOS 1.0.4（Build 195）、1.0.2（Build 67） |
-| 本次固件回归 | Strix OS 1.0.4.8，非越狱 iPhone Air 上的个人签名 V2 研究版 |
-| Bundle ID | `com.rayneo.venus.pub` |
-| 主程序 | `Runner`，thin arm64；还需匹配指定 UUID，见 [V2 兼容性门槛](official-addon/README.md#1-兼容性门槛) |
-| 其他官方版本 / Android | 尚未适配，不保证可用 |
+模型 Key、搜索 Key、个人提示词与私有知识库由使用者自己配置。我们不提供官方安装包、解密产物、固件或签名材料；未知二进制版本不得跳过兼容检查。iOS 详细版本/UUID见 [V2文档](official-addon/README.md#1-兼容性门槛)，Android输入校验见 [Android文档](android-addon/README.md#2-兼容与安装边界)。
 
-合并前请核对源 App 的 `Info.plist`：`CFBundleShortVersionString / CFBundleVersion` 必须为 `1.0.4 / 195` 或 `1.0.2 / 67`。**版本号相同也不代表二进制一定兼容；合并工具还会校验对应主程序 UUID。** 其他官方版本需要重新适配，不要改版本号或跳过检查强行合并。此限制针对 V2 官方 App 扩展，不是 V1 独立 SDK 的官方 App 安装要求。
+### 按需阅读
 
-**我们不提供官方 IPA、砸壳文件、修改版 IPA、预签名 App、密钥或签名证书。** 发布自己的扩展源码、测试及本地合并/签名工具；用户在自己电脑生成安装包，工具不会上传。普通加密 IPA、未知版本不能直接合并。当前支持版本、局限和构建步骤见 V2 文档。
+[iOS V1 配置](docs/CONFIGURATION.md) · [Web 观察与预览](#web-显示预览与观察台) · [Agent 接入](#agent-接入已实现与可扩展) · [Roadmap](#roadmap) · [许可与隐私](#隐私与许可)
 
-知识库手机→Mac→镜片、APNs 和其他 Agent 仍有未验收/未实现部分，不会用 V1 的成功记录冒充 V2 已完成。请看 [V2 验证表](official-addon/docs/VALIDATION.md)。下面的独立配对与 Web 观察说明均属于 V1，不是 V2 的通用能力承诺。
+以下主要介绍 **V1 独立 SDK**，不能把其配对、通知或 Codex 验收直接套到官方扩展；Android 请优先阅读独立教程。
 
 ## V1：独立 SDK 与示例客户端
 
@@ -65,7 +44,7 @@ V2 还增加了**程序内可编辑的个人资料与提示词**，默认不含�
 
 An unofficial RayNeo iO smart glasses SDK for developers, with a sample iOS client—not a ready-to-install consumer app. Build, sign and configure your own services to explore voice AI, recordings, custom notifications, Codex integration and a read-only web display observer.
 
-**连接前务必先在雷鸟官方 App 内解绑，再到手机蓝牙设置中“忽略此设备”，然后重新进入配对模式连接 Turbo IO。** 详见下方“连接前必读”。Android 版本待开发；非越狱 iPhone 已由用户实机验收通过。
+**V1 独立客户端连接前务必先在雷鸟官方 App 内解绑，再到手机蓝牙设置中“忽略此设备”，然后重新进入配对模式连接 Turbo IO。** 详见下方“连接前必读”。非越狱 iPhone 已由用户实机验收；Android 官方扩展另见上方路线表，Android 独立客户端仍待开发。
 
 > 本项目仅面向懂 iOS 开发、签名、API 配置与基本调试的技术用户，用于互操作研究。如果希望开箱即用、不熟悉这些操作，请使用官方 App。部分功能仍在验证，欢迎一起研究和补充实测，不承诺替代官方 App 的全部功能。
 
@@ -103,7 +82,7 @@ node display-observer/server.mjs --no-proxy
 
 ## 可以做什么
 
-**当前仅有 iOS 研究版，Android 版本待开发。**
+**以下能力表属于 V1 iOS 研究版；Android 官方扩展的范围与验收见 [Android 文档](android-addon/README.md)。**
 
 - 使用自己的服务完成眼镜语音识别、流式 AI 回答与会话内插话；保存聊天文字时间轴。
 - 接收眼镜录音、保存本机，手动触发云端转写，导出音频与文字。
@@ -214,7 +193,8 @@ node scripts/start.mjs --device
 以下是后续研究方向，不是已实现功能或交付时间承诺；顺序会随实测结果与社区贡献调整。
 
 - [ ] **优先完善现有链路**：连接恢复与后台稳定性、待办完成状态回传、长录音接收和导出，扩展更多设备及不同固件的实测。
-- [ ] **Android 版本（待开发）**：研究并实现 Android 客户端的连接、认证、语音、录音与通知链路；当前仓库不提供可用 Android App。
+- [x] **Android 官方扩展源码**：自有模型、搜索、音频分享、地图规划、镜片文字及模拟回放；详见独立教程中的验收分层。
+- [ ] **Android 后续**：非 Root 重签与地图授权验收、模拟导航镜片回归、户外跟随和稳定性；继续移植待办、提词器、全天智记。独立配对 SDK 仍待开发。
 - [ ] **更多 Agent 适配**：继续完善 Codex，研究 Claude Code、Hermes Agent、OpenClaw；WorkBuddy 仍需先确认接入方式，以上新增适配均未测试。
 - [ ] **记录与知识库**：完善录音/对话归档，研究 NAS、Obsidian 与用户自建服务的导出和同步。
 - [ ] **更丰富的手机 App**：后续考虑完善书库/提词器、待办、天气、设备设置和配置体验；丰富的是手机端与业务内容，不改变眼镜内置 UI 的限制。
@@ -232,6 +212,8 @@ node scripts/start.mjs --device
 
 | 路径 | 内容 |
 | --- | --- |
+| android-addon | Android 官方 App 扩展、纯 Java 测试及本地合并工具 |
+| official-addon | iOS 官方 App 扩展、导航及本地构建/合并说明 |
 | apps/RayNeoCompanion | SwiftUI客户端与测试，技术名称为兼容保留 |
 | core-probe/Sources | 当前设备版复用的研究通信/语音适配源码 |
 | rayneo-* | 纯Swift协议、会话、传输、显示、归档和容器检查模块 |

@@ -47,7 +47,7 @@ export function audit(root){
     }
     const dependency=/^core-probe\/Frameworks\/(?:RayneoNet|CocoaAsyncSocket|OpenSSL|RayneoLog|SwiftProtobuf|CocoaLumberjack|SSZipArchive)\.framework\//.test(relative) || relative==='core-probe/Vendor/opus-ios/libopus.a';
     if(dependency)return; // Explicit binary build dependencies; reviewed via the hash inventory.
-    if(/\.(?:ipa|apk|a|o|dylib|so|p12|pem|key|mobileprovision|wav|ogg|pcm|mp3|m4a|png|jpg|zip|log|jsonl)$/i.test(p))findings.push({file:relative,rule:'non-source-artifact'});
+    if(/\.(?:ipa|apk|dex|jar|jks|keystore|a|o|dylib|so|p12|pem|key|mobileprovision|wav|ogg|pcm|mp3|m4a|png|jpg|zip|log|jsonl)$/i.test(p))findings.push({file:relative,rule:'non-source-artifact'});
     if(s.size>2*1024*1024){findings.push({file:relative,rule:'oversize-review'});return;}
     const b=fs.readFileSync(p);if(b.includes(0)){findings.push({file:relative,rule:'binary-content'});return;}
     b.toString('utf8').split('\n').forEach((line,i)=>{for(const [rule,re]of rules)if(re.test(line))findings.push({file:relative,line:i+1,rule});});
