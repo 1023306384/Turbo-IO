@@ -38,5 +38,22 @@ xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -framework 
 ./build/news-core-tests
 xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation TodoProtocol.m NewsCaption.m NewsCaptionTests.m -o build/news-caption-tests
 ./build/news-caption-tests
-xcrun clang -DNSHomeDirectory=TIOTestHome -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation TodoProtocol.m NewsTeleprompter.m NewsTeleprompterTests.m -o build/news-teleprompter-tests
+xcrun clang -DNSHomeDirectory=TIOTestHome -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation TodoProtocol.m ProtocolContext.m NewsTeleprompter.m NewsTeleprompterTests.m -o build/news-teleprompter-tests
 ./build/news-teleprompter-tests
+
+xcrun clang -DNSHomeDirectory=TIOTestHome -fobjc-arc -fmodules -Wno-incompatible-pointer-types -framework Foundation TodoProtocol.m ProtocolContext.m NewsTeleprompter.m ProtocolRestartTests.m -o build/protocol-restart-tests
+protocol_test_dir=$(mktemp -d "$PWD/build/protocol-restart-test.XXXXXX")
+./build/protocol-restart-tests write "$protocol_test_dir"
+./build/protocol-restart-tests read "$protocol_test_dir"
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation SubtitleHUDCore.m SubtitleHUDTests.m -o build/subtitle-hud-tests
+./build/subtitle-hud-tests
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-incompatible-pointer-types -framework Foundation A2UIProtocol.m NavigationCore.m SubtitleHUDCore.m NavigationSubtitleHUD.m NavigationSubtitleHUDTests.m -o build/navigation-subtitle-tests
+./build/navigation-subtitle-tests
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation A2UIProtocol.m NavigationCore.m NavigationCoreTests.m -o build/navigation-core-tests
+./build/navigation-core-tests
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-incompatible-pointer-types -framework Foundation A2UIProtocol.m NavigationCore.m NavigationPlaces.m NavigationPlacesTests.m -o build/navigation-places-tests
+./build/navigation-places-tests
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation A2UIProtocol.m NavigationCore.m NavigationTeleHUD.m NavigationTeleHUDTests.m -o build/navigation-tele-tests
+./build/navigation-tele-tests
+xcrun clang -fobjc-arc -fmodules -Wno-incompatible-pointer-types -framework Foundation A2UIProtocol.m A2UIProtocolTests.m -o build/a2ui-protocol-tests
+./build/a2ui-protocol-tests

@@ -1,20 +1,31 @@
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
 #import "../ResearchUI.h"
 #import "../Profile.h"
-#import "HomeTabFixture.h"
-extern UITabBarController *TIOCreateResearchPreview(void);
 @protocol TIOPreviewProfileSaving
 - (void)save;
 @end
-@interface PreviewDelegate:NSObject<UIApplicationDelegate>
+#import "HomeTabFixture.h"
+#import "../NavigationUI.h"
+#import "../ManualHUD.h"
+#import "../SubtitleHUD.h"
+extern UITabBarController *TIOCreateResearchPreview(void);
+extern void TIONavRunTransportFixture(void);
+extern void TIOProtocolRuntimeFixture(void);
+@interface PreviewDelegate:NSObject<UIApplicationDelegate,UIWindowSceneDelegate>
 @property(nonatomic) UIWindow *window;
 @end
 @implementation PreviewDelegate
 - (BOOL)application:(UIApplication *)app didFinishLaunchingWithOptions:(NSDictionary *)options{
-    if([NSProcessInfo.processInfo.arguments containsObject:@"--home-tabs"]){self.window=[[UIWindow alloc]initWithFrame:UIScreen.mainScreen.bounds];self.window.rootViewController=TIOHomeTabFixture();[self.window makeKeyAndVisible];return YES;}
-    self.window=[[UIWindow alloc]initWithFrame:UIScreen.mainScreen.bounds];UIViewController *host=[UIViewController new];host.view.backgroundColor=UIColor.systemBackgroundColor;self.window.rootViewController=host;[self.window makeKeyAndVisible];
+    return YES;
+}
+- (UISceneConfiguration *)application:(UIApplication *)app configurationForConnectingSceneSession:(UISceneSession *)session options:(UISceneConnectionOptions *)options{UISceneConfiguration *c=[[UISceneConfiguration alloc]initWithName:@"Preview" sessionRole:session.role];c.delegateClass=PreviewDelegate.class;return c;}
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)options{
+    if(![scene isKindOfClass:UIWindowScene.class])return;self.window=[[UIWindow alloc]initWithWindowScene:(UIWindowScene *)scene];
+    if([NSProcessInfo.processInfo.arguments containsObject:@"--home-tabs"]){self.window.rootViewController=TIOHomeTabFixture();[self.window makeKeyAndVisible];return;}
+    UIViewController *host=[UIViewController new];host.view.backgroundColor=UIColor.systemBackgroundColor;self.window.rootViewController=host;[self.window makeKeyAndVisible];
     UIButton *open=[UIButton buttonWithType:UIButtonTypeSystem];[open setTitle:@"打开研究 UI 预览（无眼镜 / 无真实 API）" forState:UIControlStateNormal];open.frame=CGRectMake(15,180,self.window.bounds.size.width-30,60);[open addTarget:self action:@selector(show) forControlEvents:UIControlEventTouchUpInside];[host.view addSubview:open];
-    dispatch_async(dispatch_get_main_queue(),^{[self show];});return YES;
+    dispatch_async(dispatch_get_main_queue(),^{[self show];});
 }
 - (void)show{
     UITabBarController *test=TIOCreateResearchTabs(@[[UIViewController new],[UIViewController new],[UIViewController new],[UIViewController new]]);
@@ -25,6 +36,48 @@ extern UITabBarController *TIOCreateResearchPreview(void);
         NSArray *args=NSProcessInfo.processInfo.arguments;NSUInteger tabArg=[args indexOfObject:@"--tab"];
         if(tabArg!=NSNotFound&&tabArg+1<args.count)tabs.selectedIndex=MIN(3,MAX(0,[args[tabArg+1] integerValue]));
         UINavigationController *nav=(id)tabs.selectedViewController;
+        if([args containsObject:@"--manual-hud"])[nav pushViewController:TIOManualHUDController() animated:NO];
+        if([args containsObject:@"--subtitle-hud"])[nav pushViewController:TIOSubtitleHUDController() animated:NO];
+        if([args containsObject:@"--navigation-transport-test"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{TIONavRunTransportFixture();});
+        if([args containsObject:@"--protocol-runtime-check"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{TIOProtocolRuntimeFixture();});
+        if([args containsObject:@"--navigation"]){UIViewController *page=TIONavigationController();[nav pushViewController:page animated:NO];[page loadViewIfNeeded];if([args containsObject:@"--navigation-fixture"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{[page performSelector:NSSelectorFromString(@"startFixture")];});}
+        if([args containsObject:@"--navigation-workspace-check"]){
+            UIViewController *p=nav.topViewController;UIButton *plan=[p valueForKey:@"planButton"],*begin=[p valueForKey:@"beginButton"],*stop=[p valueForKey:@"stopButton"];
+            NSCAssert(!plan.enabled&&!begin.enabled&&stop.hidden,@"Idle has no runnable route");
+            [p performSelector:NSSelectorFromString(@"selectPlace:") withObject:@{@"name":@"预览测试地点",@"address":@"离线夹具，不是真实算路",@"lat":@39.9143,@"lon":@116.4112}];
+            NSCAssert(!plan.enabled,@"Selecting a place cannot bypass SDK consent");
+            [p setValue:@YES forKey:@"initialized"];[p performSelector:NSSelectorFromString(@"refresh")];NSCAssert(plan.enabled&&!begin.enabled,@"Selection can plan, cannot begin");
+            [p setValue:@YES forKey:@"active"];[p setValue:@YES forKey:@"planning"];[p performSelector:NSSelectorFromString(@"refresh")];NSCAssert(!plan.enabled&&!begin.enabled&&!stop.hidden,@"Planning has stop but no begin");
+            [p setValue:@NO forKey:@"planning"];[p setValue:@YES forKey:@"routeReady"];[p performSelector:NSSelectorFromString(@"refresh")];NSCAssert(begin.enabled,@"Route success requires explicit begin");
+            [p performSelector:NSSelectorFromString(@"stopUser")];NSCAssert(!begin.enabled&&stop.hidden,@"Stop invalidates route");
+            [p setValue:@NO forKey:@"initialized"];
+            [@"PASS: idle, consent, place selection, planning, ready and stop UI gates. Synthetic state only; no AMap or lens verification." writeToFile:[NSHomeDirectory() stringByAppendingPathComponent:@"Documents/navigation-workspace-check.txt"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        }
+        if([args containsObject:@"--navigation-interaction-check"]){
+            UIViewController *p=nav.topViewController;[p setValue:@YES forKey:@"initialized"];
+            UISegmentedControl *role=[p valueForKey:@"mapPickRole"];role.selectedSegmentIndex=1;
+            // Call the same coordinate handler used by both SDK tap/long-press delegates.
+            SEL choose=NSSelectorFromString(@"selectMapCoordinate:");void(*pick)(id,SEL,CLLocationCoordinate2D)=(void *)[p methodForSelector:choose];
+            pick(p,choose,CLLocationCoordinate2DMake(39.9087,116.3975));NSCAssert([[p valueForKey:@"hasSimulationStart"] boolValue],@"Map tap can set explicit start");
+            NSValue *start=[p valueForKey:@"simulationStart"];role.selectedSegmentIndex=0;pick(p,choose,CLLocationCoordinate2DMake(39.9143,116.4112));
+            NSCAssert([start isEqual:[p valueForKey:@"simulationStart"]],@"Selecting destination preserves start");NSCAssert([[p valueForKey:@"hasDestination"] boolValue],@"Single tap path selects destination");
+            [p setValue:@YES forKey:@"active"];[p setValue:@YES forKey:@"routeReady"];pick(p,choose,CLLocationCoordinate2DMake(39.92,116.42));
+            NSCAssert(![[p valueForKey:@"routeReady"] boolValue]&&![[p valueForKey:@"active"] boolValue],@"Editing ready route invalidates stale plan");
+            for(NSString *key in @[@"zoomInButton",@"zoomOutButton",@"centerButton"]){UIButton *b=[p valueForKey:key];NSCAssert([b actionsForTarget:p forControlEvent:UIControlEventTouchUpInside].count==1,@"Map control has real target");}
+            [p performSelector:NSSelectorFromString(@"refresh")];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{
+                [p performSelector:NSSelectorFromString(@"searchPlaces")];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{
+                    UINavigationController *sheet=(id)p.presentedViewController;UIViewController *picker=sheet.topViewController;NSCAssert(picker!=nil,@"Search entry presents picker");[picker loadViewIfNeeded];
+                    UISearchBar *bar=[picker valueForKey:@"bar"];UIButton *submit=[picker valueForKey:@"submitButton"];bar.text=@"";[submit sendActionsForControlEvents:UIControlEventTouchUpInside];NSCAssert([[[picker valueForKey:@"hint"] text] containsString:@"1–120"],@"Empty query visible validation");
+                    bar.text=@"北京公园";[submit sendActionsForControlEvents:UIControlEventTouchUpInside];NSCAssert([[[picker valueForKey:@"hint"] text] containsString:@"离线"],@"Button submits to real entry, no invented online results");
+                    [picker setValue:@YES forKey:@"searching"];NSUInteger before=[[picker valueForKey:@"generation"] unsignedIntegerValue];UITextField *city=[picker valueForKey:@"city"];city.text=@"上海";[city sendActionsForControlEvents:UIControlEventEditingChanged];NSCAssert(![[picker valueForKey:@"searching"] boolValue]&&[[picker valueForKey:@"generation"] unsignedIntegerValue]>before,@"City edits cancel old request");
+                    [picker setValue:@YES forKey:@"searching"];[submit sendActionsForControlEvents:UIControlEventTouchUpInside];NSCAssert(![[picker valueForKey:@"searching"] boolValue]&&[[[picker valueForKey:@"hint"] text] containsString:@"取消"],@"Spinner button cancels");
+                    [picker.view layoutIfNeeded];UITableView *table=(id)picker.view;CGRect button=[submit convertRect:submit.bounds toView:table.tableHeaderView];NSCAssert(button.size.height>=44&&CGRectGetMaxY(button)<=table.tableHeaderView.bounds.size.height,@"Submit has visible 44pt target inside header");
+                    [@"PASS: map coordinate roles, stable origin, stale route invalidation, wired zoom/center buttons, actual picker presentation, explicit submit/validation/cancel/city invalidation and header layout. Offline simulator; no AMap online or lens claim." writeToFile:[NSHomeDirectory() stringByAppendingPathComponent:@"Documents/navigation-interaction-check.txt"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+                });
+            });
+        }
         if([args containsObject:@"--profile-selftest"]){
             NSDictionary *before=TIOProfile();UITableViewController *root=(id)nav.topViewController;
             [root tableView:root.tableView didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:4]];
@@ -44,7 +97,7 @@ extern UITabBarController *TIOCreateResearchPreview(void);
         if([args containsObject:@"--knowledge"]){UITableViewController *root=(id)nav.topViewController;[root tableView:root.tableView didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0]];}
         NSUInteger detail=[args indexOfObject:@"--detail"];
         if(detail!=NSNotFound&&detail+1<args.count&&tabs.selectedIndex==2){
-            NSArray *paths=@[@[@0,@0],@[@0,@1],@[@1,@0],@[@1,@1]];NSUInteger index=MIN(3,MAX(0,[args[detail+1] integerValue]));
+            NSArray *paths=@[@[@1,@0],@[@1,@1],@[@2,@0],@[@2,@1]];NSUInteger index=MIN(3,MAX(0,[args[detail+1] integerValue]));
             UITableViewController *root=(id)nav.topViewController;NSIndexPath *ip=[NSIndexPath indexPathForRow:[paths[index][1] integerValue] inSection:[paths[index][0] integerValue]];
             [root tableView:root.tableView didSelectRowAtIndexPath:ip];NSCAssert(nav.viewControllers.count==2,@"Library detail reachable");
         }
