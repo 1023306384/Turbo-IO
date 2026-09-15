@@ -3,7 +3,7 @@
 #import "NavigationCore.h"
 #include <math.h>
 NSString *TIONavTeleKey(NSDictionary *f){
-    if(![f isKindOfClass:NSDictionary.class]||![f[@"phase"] isEqual:@"navigating"]||![f[@"mode"] isEqual:@"模拟步行 · 非实际定位"])return nil;
+    if(![f isKindOfClass:NSDictionary.class]||![f[@"phase"] isEqual:@"navigating"]||![f[@"mode"] isEqual:@"模拟导航 · 非实际定位"])return nil;
     for(NSString *k in @[@"turn",@"road",@"distance"])if(![f[k] isKindOfClass:NSString.class]||[f[k] lengthOfBytesUsingEncoding:NSUTF8StringEncoding]>240)return nil;
     id segment=f[@"segment"];if(![segment isKindOfClass:NSNumber.class]||CFGetTypeID((__bridge CFTypeRef)segment)==CFBooleanGetTypeID())return nil;
     double n=[segment doubleValue];if(!isfinite(n)||n<0||n>100000||n!=[segment integerValue])return nil;

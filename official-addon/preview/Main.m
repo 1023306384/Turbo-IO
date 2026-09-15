@@ -41,6 +41,25 @@ extern void TIOProtocolRuntimeFixture(void);
         if([args containsObject:@"--navigation-transport-test"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{TIONavRunTransportFixture();});
         if([args containsObject:@"--protocol-runtime-check"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{TIOProtocolRuntimeFixture();});
         if([args containsObject:@"--navigation"]){UIViewController *page=TIONavigationController();[nav pushViewController:page animated:NO];[page loadViewIfNeeded];if([args containsObject:@"--navigation-fixture"])dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC),dispatch_get_main_queue(),^{[page performSelector:NSSelectorFromString(@"startFixture")];});}
+        if([args containsObject:@"--navigation-modes-check"]){
+            UIViewController *p=nav.topViewController;UISegmentedControl *m=[p valueForKey:@"transportMode"],*travel=[p valueForKey:@"travelMode"];
+            NSCAssert(m.numberOfSegments==3&&[[m titleForSegmentAtIndex:1] isEqual:@"骑行"]&&[[m titleForSegmentAtIndex:2] isEqual:@"驾车"],@"Three real transport choices");
+            [p performSelector:NSSelectorFromString(@"selectPlace:") withObject:@{@"name":@"模式测试终点",@"lat":@39.9143,@"lon":@116.4112}];
+            NSValue *end=[p valueForKey:@"destination"];
+            for(NSInteger mode=0;mode<3;mode++){
+                m.selectedSegmentIndex=mode;[m sendActionsForControlEvents:UIControlEventValueChanged];
+                NSCAssert([[p valueForKey:@"selectedTransport"] integerValue]==mode&&[end isEqual:[p valueForKey:@"destination"]],@"Switch preserves destination");
+                travel.selectedSegmentIndex=1;[travel sendActionsForControlEvents:UIControlEventValueChanged];UIButton *b=[p valueForKey:@"beginButton"];
+                NSCAssert([b.configuration.title isEqual:[@"开始" stringByAppendingString:[m titleForSegmentAtIndex:mode]]],@"GPS action reflects selected engine");
+            }
+            [p setValue:@YES forKey:@"active"];[p setValue:@YES forKey:@"routeReady"];m.selectedSegmentIndex=1;[m sendActionsForControlEvents:UIControlEventValueChanged];
+            NSCAssert(![[p valueForKey:@"active"] boolValue]&&![[p valueForKey:@"routeReady"] boolValue],@"Ready route invalidated on mode change");
+            [p setValue:@YES forKey:@"active"];[p setValue:@YES forKey:@"planning"];[p performSelector:NSSelectorFromString(@"refresh")];NSCAssert(!m.enabled,@"Cannot switch during planning");
+            [p setValue:@NO forKey:@"planning"];[p performSelector:NSSelectorFromString(@"refresh")];NSCAssert(!m.enabled,@"Cannot switch while navigating");
+            [p performSelector:NSSelectorFromString(@"stopUser")];NSCAssert(m.enabled,@"Stop re-enables selection");
+            travel.selectedSegmentIndex=0;[travel sendActionsForControlEvents:UIControlEventValueChanged];
+            [@"PASS: three transport segments, selected-mode GPS labels, preserved endpoint, ready-route invalidation, planning/running switch lock and stop recovery. Offline UIKit; no online SDK or lens acceptance." writeToFile:[NSHomeDirectory() stringByAppendingPathComponent:@"Documents/navigation-modes-check.txt"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        }
         if([args containsObject:@"--navigation-workspace-check"]){
             UIViewController *p=nav.topViewController;UIButton *plan=[p valueForKey:@"planButton"],*begin=[p valueForKey:@"beginButton"],*stop=[p valueForKey:@"stopButton"];
             NSCAssert(!plan.enabled&&!begin.enabled&&stop.hidden,@"Idle has no runnable route");
