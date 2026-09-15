@@ -4,6 +4,8 @@
 
 [返回项目首页](../README.md) · [验证记录](docs/VALIDATION.md) · [非商业许可](../LICENSE)
 
+**获取官方 App：[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)**。将此链接、仓库地址和[首页提示词](../README.md#让-claude-code--codex-帮你接入)一起交给 Claude Code / Codex，即可按本教程引导检查、构建与配置。页面可能提供更新版本，仍需通过下方SHA校验；不是不经验证就能合并。详见[完整AI接入说明](../docs/AI_SETUP.md)。
+
 ## 1. 可以做什么
 
 | 能力 | 当前状态 |
@@ -24,7 +26,7 @@
 
 - 官方 App：Android **雷鸟 AI 1.0.4（195）**，包名 `com.rayneo.venus.pub`，ARM64，官方最低 Android 10 / API 29。
 - 合并输入 SHA-256：`ef2e7dd346ca478e13d0f3f1bf31fa61412e44fb9b4ca9cf0d3e864ac608584b`。版本号相同但内容不同也会拒绝；不要跳过检查。
-- 业务验收来自 Android 12 ARM64 Root 研究设备，在原签名宿主内临时加载。**非 Root 重签 APK 尚未完成安装、登录、地图授权与稳定性验收。**
+- 前期业务验收来自 Android 12 ARM64 Root 研究设备；**2026-09-15 用户进一步确认非 Root 设备已实机测试可用**。不再要求Root才能使用；不同机型、签名/地图服务与长期稳定性仍按自己的环境复核。
 - Root 不是原创 Java 业务代码的必要依赖；它用于当前研究加载。合并工具生成普通 DEX/APK，不等于已证明所有非 Root 手机可用。
 - 这是**宿主内扩展**：沿用宿主连接，不需要按 V1 独立 SDK 的步骤先解绑。不要同时运行 V1 或其他手机争抢同一副眼镜；跨手机换绑仍由官方流程处理。
 - 不修改眼镜固件或内置页面布局。导航复用字幕显示模板，不是投屏，也不是把 Android App 安装到眼镜。
@@ -48,7 +50,7 @@ node android-addon/package.mjs /path/to/RayNeo_AI_1.0.4.apk
 
 第一步运行73项检查，生成原创 `android-addon/build/dex/classes.dex`。第二步校验输入包、保留原回调方法并增加桥接，输出 `android-addon/build/TurboIO-RayNeo-1.0.4-unsigned.apk`。只编译原创 DEX 不需要官方 APK。
 
-### 自己签名（非 Root 路线待验收）
+### 自己签名（非 Root 设备已验证可用）
 
 使用自己的 keystore；不要把签名密码写进命令或仓库。以下命令由工具交互询问密码：
 
@@ -110,6 +112,6 @@ node android-addon/package.mjs /path/to/RayNeo_AI_1.0.4.apk
 | `TurboStyle.java` | 原创原生界面样式 |
 | `package.mjs` / `tests/` | 固定版本本地合并与回归检查 |
 
-下一步：非 Root 重签验收与高德配置、模拟导航镜片验收、户外跟随/断连/退出、长期稳定性，再逐项移植待办、提词器、全天智记和其他 Agent。欢迎提交**脱敏**复现步骤，不要附 Key、个人录音、聊天、设备标识或官方包。
+下一步：扩大非 Root 设备与高德配置覆盖、模拟导航镜片验收、户外跟随/断连/退出、长期稳定性，再逐项移植待办、提词器、全天智记和其他 Agent。欢迎提交**脱敏**复现步骤，不要附 Key、个人录音、聊天、设备标识或官方包。
 
 原创代码沿用仓库 [PolyForm Noncommercial 1.0.0](../LICENSE)，仅非商业学习研究；第三方 App、SDK 和服务的权利与条款不因本项目改变。未经授权不得商用或收费分发。
