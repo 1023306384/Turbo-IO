@@ -10,10 +10,11 @@
 }
 - (void)buildWorkspace{
     for(UIView *v in self.stack.arrangedSubviews.copy){[self.stack removeArrangedSubview:v];[v removeFromSuperview];}
-    self.title=@"步行导航";self.note=@"搜索地点或单击地图选终点；模拟起点单独设置。先规划、再开始。";self.stack.spacing=14;self.scroll.keyboardDismissMode=UIScrollViewKeyboardDismissModeOnDrag;self.scroll.delaysContentTouches=NO;
+    self.title=@"出行导航";self.note=@"搜索地点或单击地图选终点；模拟起点单独设置。先规划、再开始。";self.stack.spacing=14;self.scroll.keyboardDismissMode=UIScrollViewKeyboardDismissModeOnDrag;self.scroll.delaysContentTouches=NO;
     self.navigationItem.rightBarButtonItem=[[UIBarButtonItem alloc]initWithImage:[UIImage systemImageNamed:@"ellipsis.circle"] style:UIBarButtonItemStylePlain target:self action:@selector(navigationMore)];self.navigationItem.rightBarButtonItem.accessibilityIdentifier=@"navigation-more";
-    UILabel *eyebrow=[self navLabel:@"TURBO IO  /  轻量步行指引" size:12 weight:UIFontWeightSemibold];eyebrow.textColor=UIColor.secondaryLabelColor;[self.stack addArrangedSubview:eyebrow];
+    UILabel *eyebrow=[self navLabel:@"TURBO IO  /  轻量出行指引" size:12 weight:UIFontWeightSemibold];eyebrow.textColor=UIColor.secondaryLabelColor;[self.stack addArrangedSubview:eyebrow];
     self.searchButton=[self navAction:@"去哪里？搜索地点或地址" icon:@"magnifyingglass" selector:@selector(searchPlaces) primary:NO];self.searchButton.accessibilityIdentifier=@"navigation-search";[self.stack addArrangedSubview:self.searchButton];
+    self.transportMode=[[UISegmentedControl alloc]initWithItems:TIONavigationModeTitles()];self.transportMode.selectedSegmentIndex=TIONavigationWalk;self.transportMode.accessibilityIdentifier=@"navigation-transport-mode";[self.transportMode addTarget:self action:@selector(transportModeChanged) forControlEvents:UIControlEventValueChanged];[self.stack addArrangedSubview:self.transportMode];
     self.mapPickRole=[[UISegmentedControl alloc]initWithItems:@[@"选终点",@"选模拟起点"]];self.mapPickRole.selectedSegmentIndex=0;self.mapPickRole.accessibilityIdentifier=@"navigation-pick-role";[self.mapPickRole addTarget:self action:@selector(pickRoleChanged) forControlEvents:UIControlEventValueChanged];[self.stack addArrangedSubview:self.mapPickRole];
     self.mapHost=[UIView new];self.mapHost.backgroundColor=UIColor.secondarySystemGroupedBackgroundColor;self.mapHost.layer.cornerRadius=22;self.mapHost.clipsToBounds=YES;self.mapHeight=[self.mapHost.heightAnchor constraintEqualToConstant:240];self.mapHeight.active=YES;[self.stack addArrangedSubview:self.mapHost];
     self.mapHint=[self navLabel:@"地图尚未开启\n\n高德地图与地点搜索需要网络\n同意隐私说明后加载" size:16 weight:UIFontWeightMedium];self.mapHint.textAlignment=NSTextAlignmentCenter;self.mapHint.textColor=UIColor.secondaryLabelColor;self.mapHint.translatesAutoresizingMaskIntoConstraints=NO;[self.mapHost addSubview:self.mapHint];[NSLayoutConstraint activateConstraints:@[[self.mapHint.leadingAnchor constraintEqualToAnchor:self.mapHost.leadingAnchor constant:24],[self.mapHint.trailingAnchor constraintEqualToAnchor:self.mapHost.trailingAnchor constant:-24],[self.mapHint.centerYAnchor constraintEqualToAnchor:self.mapHost.centerYAnchor]]];
@@ -26,7 +27,7 @@
     UIStackView *zoom=[[UIStackView alloc]initWithArrangedSubviews:@[self.zoomInButton,self.zoomOutButton]];zoom.axis=UILayoutConstraintAxisVertical;zoom.spacing=2;zoom.translatesAutoresizingMaskIntoConstraints=NO;[self.mapHost addSubview:zoom];[NSLayoutConstraint activateConstraints:@[[zoom.trailingAnchor constraintEqualToAnchor:self.mapHost.trailingAnchor constant:-8],[zoom.bottomAnchor constraintEqualToAnchor:self.mapHost.bottomAnchor constant:-28]]];
     self.routeCard=[self navCard];self.destinationLabel=[self navLabel:@"选择你的目的地" size:21 weight:UIFontWeightSemibold];self.destinationLabel.accessibilityIdentifier=@"navigation-destination";[self.routeCard addArrangedSubview:self.destinationLabel];
     self.routeSummary=[self navLabel:@"单击地图选终点，也可以搜索地点" size:14 weight:UIFontWeightRegular];self.routeSummary.textColor=UIColor.secondaryLabelColor;[self.routeCard addArrangedSubview:self.routeSummary];
-    self.travelMode=[[UISegmentedControl alloc]initWithItems:@[@"模拟验收",@"实际步行"]];self.travelMode.selectedSegmentIndex=0;self.travelMode.accessibilityIdentifier=@"navigation-mode";[self.travelMode addTarget:self action:@selector(modeChanged) forControlEvents:UIControlEventValueChanged];[self.routeCard addArrangedSubview:self.travelMode];
+    self.travelMode=[[UISegmentedControl alloc]initWithItems:@[@"模拟验收",@"实时导航"]];self.travelMode.selectedSegmentIndex=0;self.travelMode.accessibilityIdentifier=@"navigation-mode";[self.travelMode addTarget:self action:@selector(modeChanged) forControlEvents:UIControlEventValueChanged];[self.routeCard addArrangedSubview:self.travelMode];
     self.startLabel=[self navLabel:@"模拟起点：开启地图后选择" size:13 weight:UIFontWeightMedium];self.startLabel.accessibilityIdentifier=@"navigation-start-point";[self.routeCard addArrangedSubview:self.startLabel];
     self.briefLabel=[self navLabel:@"模拟起点独立保存，不随地图中心变化。" size:12 weight:UIFontWeightRegular];self.briefLabel.textColor=UIColor.secondaryLabelColor;[self.routeCard addArrangedSubview:self.briefLabel];
     UIStackView *actions=[UIStackView new];actions.axis=UILayoutConstraintAxisHorizontal;actions.spacing=10;actions.distribution=UIStackViewDistributionFillEqually;self.planButton=[self navAction:@"规划路线" icon:@"point.topleft.down.curvedto.point.bottomright.up" selector:@selector(planRoute) primary:NO];self.planButton.accessibilityIdentifier=@"navigation-plan";self.beginButton=[self navAction:@"开始模拟" icon:@"play.fill" selector:@selector(beginRoute) primary:YES];self.beginButton.accessibilityIdentifier=@"navigation-begin";[actions addArrangedSubview:self.planButton];[actions addArrangedSubview:self.beginButton];[self.routeCard addArrangedSubview:actions];
@@ -36,12 +37,13 @@
     UILabel *preview=[self navLabel:@"文字内容预览，非镜片截图；实际排版由眼镜决定。" size:11 weight:UIFontWeightRegular];preview.textColor=UIColor.secondaryLabelColor;[self.lensCard addArrangedSubview:preview];
     self.lensButton=[self navAction:@"开启眼镜字幕显示" icon:@"eyeglasses" selector:@selector(toggleLens) primary:NO];self.lensButton.accessibilityIdentifier=@"navigation-subtitle-enable";[self.lensCard addArrangedSubview:self.lensButton];
     self.stopButton=[self navAction:@"结束导航" icon:@"stop.fill" selector:@selector(stopUser) primary:YES];UIButtonConfiguration *stopConfig=self.stopButton.configuration;stopConfig.baseBackgroundColor=UIColor.systemRedColor;self.stopButton.configuration=stopConfig;self.stopButton.accessibilityIdentifier=@"navigation-stop";self.stopButton.translatesAutoresizingMaskIntoConstraints=NO;[self.view addSubview:self.stopButton];[NSLayoutConstraint activateConstraints:@[[self.stopButton.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor constant:16],[self.stopButton.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor constant:-16],[self.stopButton.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-8]]];
-    UILabel *foot=[self navLabel:@"当前仅步行。手机导航需保持前台；眼镜字幕仅开放模拟验收，4分钟保护。后台、长距离与户外可靠性仍待测试。诊断和备用通道在右上角“更多”。" size:12 weight:UIFontWeightRegular];foot.textColor=UIColor.secondaryLabelColor;[self.stack addArrangedSubview:foot];
+    UILabel *foot=[self navLabel:@"支持步行、骑行、驾车，分别使用对应高德路线。手机实时导航需保持前台；眼镜字幕仅开放模拟验收，4分钟保护。后台与实际道路可靠性仍待测试，请勿边驾驶边操作。诊断和备用通道在右上角“更多”。" size:12 weight:UIFontWeightRegular];foot.textColor=UIColor.secondaryLabelColor;[self.stack addArrangedSubview:foot];
 }
 - (void)refreshWorkspace{
     if(!self.planButton)return;BOOL running=self.active&&!self.planning&&!self.routeReady;
     self.searchButton.enabled=YES;self.travelMode.enabled=!self.active||self.routeReady;self.planButton.enabled=!self.active&&self.hasDestination&&self.initialized;self.beginButton.enabled=self.routeReady;
-    UIButtonConfiguration *begin=self.beginButton.configuration;begin.title=self.travelMode.selectedSegmentIndex==0?@"开始模拟":@"开始步行";self.beginButton.configuration=begin;
+    self.title=[NSString stringWithFormat:@"%@导航",TIONavigationModeTitle(self.selectedTransport)?:@"出行"];self.transportMode.enabled=TIONavigationMayChangeMode(self.active,self.routeReady);
+    UIButtonConfiguration *begin=self.beginButton.configuration;begin.title=self.travelMode.selectedSegmentIndex==0?@"开始模拟":[NSString stringWithFormat:@"开始%@",TIONavigationModeTitle(self.selectedTransport)];self.beginButton.configuration=begin;
     self.briefLabel.text=self.note?:@"";self.stopButton.hidden=!self.active&&![self.subtitleHUD.status[@"enabled"] boolValue];
     self.scroll.contentInset=UIEdgeInsetsMake(0,0,self.stopButton.hidden?0:68,0);self.scroll.verticalScrollIndicatorInsets=self.scroll.contentInset;self.mapHeight.constant=running?180:240;
     BOOL picking=!self.active||self.routeReady;BOOL sim=self.travelMode.selectedSegmentIndex==0;
@@ -59,11 +61,19 @@
     self.lensStatus.text=on?[NSString stringWithFormat:@"%@ · 已提交 %@ 帧（非镜片回执）",s[@"note"],s[@"frames"]]:[NSString stringWithFormat:@"%@\n%@",s[@"note"]?:@"尚未开启",[runtime[@"available"] boolValue]?@"字幕格式已就绪 · 需确认眼镜空闲":@"等待当前眼镜连接或兼容配置；无需每次预览"];
     if(!running)self.hudLabel.text=self.planning?@"正在规划路线…":self.routeReady?@"路线已就绪\n点击开始后产生指引":@"等待导航指引\n\n转向 · 距离 · 道路";
 }
-- (void)modeChanged{if(![self prepareForSelection])return;self.mapPickRole.selectedSegmentIndex=0;self.routeSummary.text=@"尚未规划路线";self.note=self.travelMode.selectedSegmentIndex==0?@"模拟起点单独保存：切换“选模拟起点”后点地图。":@"实际步行使用手机位置；眼镜字幕暂未开放真实步行。";[self refresh];}
+- (void)modeChanged{if(![self prepareForSelection])return;self.mapPickRole.selectedSegmentIndex=0;self.routeSummary.text=@"尚未规划路线";self.note=self.travelMode.selectedSegmentIndex==0?@"模拟起点单独保存：切换“选模拟起点”后点地图。":@"实时导航使用手机位置；眼镜字幕暂仅开放模拟。请勿边驾驶边操作。";[self refresh];}
+- (void)transportModeChanged{
+    NSInteger mode=self.transportMode.selectedSegmentIndex;if(!TIONavigationModeTitle(mode)||!TIONavigationMayChangeMode(self.active,self.routeReady)){self.transportMode.selectedSegmentIndex=self.selectedTransport;[self alert:@"请先结束当前导航" message:@"结束后再切换出行方式，不会使用旧模式路线。"] ;return;}
+    if(![self prepareForSelection])return;self.selectedTransport=mode;self.routeReady=NO;self.routeSummary.text=@"出行方式已更改，请重新规划";
+#if TIO_AMAP_ENABLED
+    if(self.routeLine){[self.map removeOverlay:self.routeLine];self.routeLine=nil;}
+#endif
+    self.note=[NSString stringWithFormat:@"已切换%@，起终点保留；使用%@引擎重新算路。先用模拟验收，请勿边驾驶/骑车边调试。",TIONavigationModeTitle(mode),TIONavigationModeTitle(mode)];[self refresh];
+}
 - (void)planRoute{if(self.travelMode.selectedSegmentIndex==0)[self startSimulation];else [self startWalking];}
 - (void)beginRoute{
 #if TIO_AMAP_ENABLED
-    if(!self.routeReady||!self.manager||self.planning)return;BOOL ok=self.simulated?[self.manager startEmulatorNavi]:[self.manager startGPSNavi];if(!ok){[self fail:@"导航启动失败，可停止后重新规划"];return;}self.routeReady=NO;self.lastInfo=NSProcessInfo.processInfo.systemUptime;self.note=self.simulated?@"模拟已开始；可单独开启眼镜显示，不会自动抢占眼镜。":@"实际步行已开始，请保持手机前台并以手机地图为准。";[self refresh];
+    if(!self.routeReady||!self.manager||self.planning)return;BOOL ok=self.simulated?[self.manager startEmulatorNavi]:[self.manager startGPSNavi];if(!ok){[self fail:@"导航启动失败，可停止后重新规划"];return;}self.routeReady=NO;self.lastInfo=NSProcessInfo.processInfo.systemUptime;self.note=self.simulated?@"模拟已开始；可单独开启眼镜显示，不会自动抢占眼镜。":@"实时导航已开始，请保持手机前台并以手机地图和实际路况为准。";[self refresh];
 #endif
 }
 - (void)toggleLens{if([self.subtitleHUD.status[@"enabled"] boolValue]){[self.subtitleHUD stop:@"用户停止眼镜显示，手机导航继续"];[self refresh];}else [self enableSubtitleHUD];}

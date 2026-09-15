@@ -17,7 +17,7 @@ NSDictionary *TIONavDisplay(NSString *phase,NSInteger icon,NSString *road,NSInte
     BOOL running=[phase isEqual:@"navigating"];NSString *title=running?TIONavTurn(icon):(titles[phase]?:@"请查看手机");
     NSString *detail=running?(road.length?[@"进入 " stringByAppendingString:road]:@"按照道路实际指示通行"):@"请查看手机，勿依赖旧指引";
     NSString *summary=running?[NSString stringWithFormat:@"剩余 %@ · %@",Distance(remaining),seconds>=0?[NSString stringWithFormat:@"约 %ld 分钟",(long)MAX(1,(NSInteger)ceil(seconds/60.0))]:@"时间待更新"]:@"";
-    return @{@"phase":phase?:@"unknown",@"meters":@(distance),@"mode":sim?@"模拟步行 · 非实际定位":@"步行导航 · 高德",@"turn":title,@"distance":running?Distance(distance):@"",@"road":TIONavClip(detail,210),@"summary":summary};
+    return @{@"phase":phase?:@"unknown",@"meters":@(distance),@"mode":sim?@"模拟导航 · 非实际定位":@"实时导航 · 高德",@"turn":title,@"distance":running?Distance(distance):@"",@"road":TIONavClip(detail,210),@"summary":summary};
 }
 NSString *TIONavNoticeKey(NSDictionary *d){
     if(![d isKindOfClass:NSDictionary.class])return nil;

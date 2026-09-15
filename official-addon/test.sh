@@ -2,6 +2,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build
+xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation NavigationModes.m NavigationModesTests.m -o build/navigation-modes-tests
+./build/navigation-modes-tests
 xcrun clang -fobjc-arc -fmodules -Wall -Wextra -framework Foundation Profile.m ProfileTests.m -o build/profile-tests
 ./build/profile-tests
 xcrun clang -fobjc-arc -fmodules -Wall -Wextra -Wno-unused-parameter -Wno-incompatible-pointer-types -framework Foundation Core.m Profile.m WebSearch.m KnowledgeToolFlowTests.m -o build/knowledge-tool-tests
