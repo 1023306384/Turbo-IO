@@ -13,3 +13,9 @@
 *.pem
 *.key
 *.mobileprovision
+*.jks
+*.keystore
+*.dex
+*.jsonl
+**/private/
+**/*PrivateBootstrap*
