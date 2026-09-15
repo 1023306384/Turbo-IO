@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 
 // Exact, visually reviewed documentation captures, not a blanket PNG exclusion.
 const reviewedScreenshots = new Map([
+  ['official-addon/docs/navigation-search.png', 'd6a4dcb745bd87e67884fa686d87d033d9b557bd70a31cea4fc8098f7935245c'],
   ['official-addon/docs/model-preview.png', '01e013c04f3b0841e4a7ef1ca83af89585154f562c23cfa71698ede373eb4f79'],
   ['official-addon/docs/knowledge-preview.png', 'bb7acde21eddf1c5f83eb02b48cddf2228ad913796fe76f8f5187297a49eb5e7'],
   ['official-addon/docs/profile-preview.png', '567cad6092cc82c543f2c01061615a2ae5e4f491bfd486ee11669dffb5db91b6'],
@@ -28,6 +29,7 @@ export function audit(root){
     ['temporary-public-endpoint',/https:\/\/[a-z0-9-]+\.trycloudflare\.com/],
   ];
   function walk(p){
+    if(path.basename(p)==='.git')return; // Also support Git worktree pointer files.
     const s=fs.lstatSync(p),relative=path.relative(root,p);
     if(s.isSymbolicLink()){findings.push({file:relative,rule:'symlink'});return;}
     if(s.isDirectory()){

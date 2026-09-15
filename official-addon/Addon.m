@@ -5,6 +5,7 @@
 #import <mach-o/dyld.h>
 #import <mach-o/loader.h>
 #import "Core.h"
+#import "NavigationUI.h"
 #import "Profile.h"
 #import "ProfileUI.h"
 #import "RecordingExports.h"
@@ -269,6 +270,7 @@ static void AlwaysOnHook(id self,SEL cmd,id value) {
     if([r[@"key"] isEqual:@"mode"]){c.detailTextLabel.font=[UIFont preferredFontForTextStyle:UIFontTextStyleTitle3];c.detailTextLabel.textColor=UIColor.labelColor;}
     if([r[@"key"] isEqual:@"history"])c.detailTextLabel.text=[c.detailTextLabel.text stringByAppendingString:@" · 点此管理清空"];
     if(section==-1)c.detailTextLabel.text=@[@"本机音频 / TXT / Markdown · AirDrop与文件",@"导入或粘贴转写，确认后交给自有模型",@"导出 Markdown 或整理已保存文字",@"明确开启保存后，查看与分享音频副本"][row];
+    if([r[@"key"] isEqual:@"navigation"])c.detailTextLabel.text=@"高德搜索 / 地图选点 / 步行模拟 → 眼镜常亮文字；需自备iOS Key";
     if([r[@"key"] isEqual:@"archive"])c.detailTextLabel.text=@"一次导出 Markdown 与 JSON";
     if([r[@"key"] isEqual:@"capture"])c.detailTextLabel.text=@"只保存之后的智记文字，不启动麦克风";
     if([r[@"key"] isEqual:@"status"])c.accessoryType=UITableViewCellAccessoryNone;
@@ -328,6 +330,7 @@ static void AlwaysOnHook(id self,SEL cmd,id value) {
     NSDictionary *r=self.sections[ip.section][@"rows"][ip.row];[tableView deselectRowAtIndexPath:ip animated:YES];
     if([r[@"key"] isEqual:@"agent"])return;
     if([r[@"key"] isEqual:@"knowledge"]){TIOOpenKnowledge(self);return;}
+    if([r[@"key"] isEqual:@"navigation"]){[self.navigationController pushViewController:TIONavigationController() animated:YES];return;}
     if([@[@"thinking",@"search",@"exit",@"capture"] containsObject:r[@"key"]])return;
     NSInteger section=[r[@"section"] integerValue],row=[r[@"row"] integerValue];
     if(section>=0){[self legacySelect:tableView at:[NSIndexPath indexPathForRow:row inSection:section]];return;}
