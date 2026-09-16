@@ -268,3 +268,13 @@ xcrun swift test --package-path rayneo-session
 当前有权授权的原创内容采用 [PolyForm Noncommercial 1.0.0](LICENSE)，用于非商业学习研究；未经授权不得商用或收费分发。历史 MIT 权利不追溯撤销，详见[许可说明](docs/LICENSING.md)。第三方组件及厂商通信库不因随工程使用而变更许可，具体归属见 [第三方说明](THIRD_PARTY_NOTICES.md)。本工程与设备厂商无官方隶属关系。
 
 发布不包含个人录音、聊天、凭据、绑定数据库、原始日志、私有临时隧道配置、IPA或预签名App。详见[源码发布说明](docs/SOURCE_RELEASE.md)。
+
+## 请我喝杯咖啡 ☕
+
+如果 Turbo IO 对你的研究和开发有所帮助，欢迎自愿捐赠，支持后续维护与探索。感谢支持！
+
+捐赠不代表购买软件、技术支持或商业授权，也不改变本项目的非商业许可。
+
+<p align="center">
+  <img src="https://github.com/Turbo1123/turbometa-rayban-ai/raw/main/screenshots/%E8%AF%B7%E6%88%91%E5%96%9D%E5%92%96%E5%95%A1.png" alt="请我喝杯咖啡 · 自愿捐赠支持 Turbo IO" width="360" />
+</p>
