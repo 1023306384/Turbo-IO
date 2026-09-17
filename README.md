@@ -45,7 +45,11 @@ Key由我在本机安全填写，不索取聊天明文、不复用维护者配�
 完成后分别报告源码/编译/安装/登录/眼镜/模型的实际结果；未验收明确标注，不把构建成功当作全部可用。
 ```
 
-**Android**：非 Root 设备已由用户实机验证可用；页面提供的包仍需通过仓库输入校验，使用自己的签名与服务配置。**iOS**：官方下载/商店安装不等于取得可合并的未加密 `Runner.app`；缺少合规兼容输入时先做源码构建或预览。只用 V1/Web 不需要官方包。已有 `turbo-io` 技能也可使用，见[技能安装与更新](docs/AGENT_SKILL.md)。
+- **原生鸿蒙 HarmonyOS**：独立客户端已在 Mate X5（HarmonyOS 6.1）验证连接、自有语音和步行模拟导航镜片显示，**无需 Root，也不需要官方 APK / IPA**。使用 DevEco Studio、自有开发者账号和签名自行编译安装，服务 Key 自行配置；不提供 HAP 或签名包。系统通知转发尚未实现，其他限制见[鸿蒙安装、权限与验收说明](harmony-sdk/README.md)。
+- **Android**：非 Root 设备已由用户实机验证可用；官方下载页用于取得 Android 宿主，输入仍需通过仓库校验，使用自己的签名与服务配置。见 [Android 安装教程](android-addon/README.md)。
+- **iOS**：官方下载/商店安装不等于取得可合并的未加密 `Runner.app`；缺少合规兼容输入时先做源码构建或预览。只用 V1/Web 不需要官方包。见 [iOS 扩展教程](official-addon/README.md)。
+
+已有 `turbo-io` 技能也可使用，见[技能安装与更新](docs/AGENT_SKILL.md)；选择鸿蒙时，应同时提供 [HarmonyOS 安装教程](harmony-sdk/README.md)，不要套用 iOS/Android 宿主合并流程。
 
 ## 最新进展 · 2026-09-17
 
