@@ -54,21 +54,24 @@
 
 ## 让 Claude Code / Codex 帮你接入
 
-**[雷鸟 AI 官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)** · **[完整 AI 接入说明](docs/AI_SETUP.md)**
+**Android：[雷鸟 AI Android 官方下载入口](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)** · **[完整 AI 接入说明](docs/AI_SETUP.md)**
 
-把**官方下载页 + 本仓库 + 下面的提示词**一起交给电脑上的 Claude Code 或 Codex，让它按你的平台检查环境、编译、合并并引导配置。不需要先弄懂所有脚本；但你仍需提供自己的签名、服务配置并完成手机授权和镜片验收。仅聊天、不能访问本机文件和终端的环境不能替你完成真机安装。
+**iOS：需要自行解决砸壳／未加密应用副本的准备问题，并确保有权使用。我们不提供砸壳 IPA、砸壳文件、下载来源或代砸壳服务；普通 App Store 加密 IPA 不能直接合并。**
+
+Android 用户把**官方下载入口 + 本仓库 + 下面的提示词**一起交给电脑上的 Claude Code 或 Codex；iOS 官方扩展用户需另行自行准备合法兼容的未加密应用副本。原生鸿蒙 HarmonyOS 用户只需本仓库与提示词，不需要官方包。再让助手按所选路线检查环境、编译并引导配置；只有官方扩展需要合并宿主。不需要先弄懂所有脚本；但你仍需提供自己的签名、服务配置并完成手机授权和镜片验收。仅聊天、不能访问本机文件和终端的环境不能替你完成真机安装。
 
 复制下面整段，选择括号里的目标：
 
 ```text
 请帮我在这台电脑上接入 Turbo IO，仅用于个人非商业学习研究。
 源码：https://github.com/Turbo1123/Turbo-IO
-官方 App 下载页：https://rayneo.cn/commonPage/venus/appDownload/index_m.html
+Android 官方 App 下载入口：https://rayneo.cn/commonPage/venus/appDownload/index_m.html
+iOS 官方扩展：合法兼容的砸壳/未加密应用副本由我自行准备，项目不提供文件或砸壳服务。
 目标：[原生鸿蒙 HarmonyOS 客户端 / Android 官方扩展 / iOS 官方扩展 / iOS 独立 SDK / 仅 Web 预览]
 
 先读取 README、docs/AI_SETUP.md 和目标平台文档，检查电脑环境、现有项目改动及设备状态。
 没有源码时克隆到新的目录；使用仓库现成构建、测试和合并脚本，不要只给我操作教程。
-官方下载页用于 Android 宿主；Android 核对版本和 SHA-256，iOS 自行准备兼容的未加密 thin arm64 输入。原生鸿蒙不需要官方 APK/IPA，按 harmony-sdk/README.md 用自己的 DevEco 签名编译。
+官方下载页用于 Android 宿主，不保证当前下载版本兼容，需核对版本和 SHA-256；iOS 对自行准备的副本核对版本、UUID 及未加密 thin arm64 要求。原生鸿蒙不需要官方 APK/IPA，按 harmony-sdk/README.md 用自己的 DevEco 签名编译。
 下载或输入不兼容时停止合并并说明缺什么，不修改校验、不绕过加密，也不索取第三方破解包。
 先完成能独立验证的构建或预览，再引导我使用自己的签名；安装、卸载、重启或改变绑定前确认目标和数据备份。
 Key由我在本机安全填写，不索取聊天明文、不复用维护者配置，不把私钥、安装包、录音和日志提交到GitHub。
@@ -78,7 +81,7 @@ Key由我在本机安全填写，不索取聊天明文、不复用维护者配�
 
 - **原生鸿蒙 HarmonyOS**：独立客户端已在 Mate X5（HarmonyOS 6.1）验证连接、自有语音和步行模拟导航镜片显示，**无需 Root，也不需要官方 APK / IPA**。使用 DevEco Studio、自有开发者账号和签名自行编译安装，服务 Key 自行配置；不提供 HAP 或签名包。系统通知转发尚未实现，其他限制见[鸿蒙安装、权限与验收说明](harmony-sdk/README.md)。
 - **Android**：非 Root 设备已由用户实机验证可用；官方下载页用于取得 Android 宿主，输入仍需通过仓库校验，使用自己的签名与服务配置。见 [Android 安装教程](android-addon/README.md)。
-- **iOS**：官方下载/商店安装不等于取得可合并的未加密 `Runner.app`；缺少合规兼容输入时先做源码构建或预览。只用 V1/Web 不需要官方包。见 [iOS 扩展教程](official-addon/README.md)。
+- **iOS**：需自行准备合法兼容的未加密 `Runner.app`；我们不提供砸壳文件或服务，官方下载/商店安装也不等于取得可合并的输入。缺少合规兼容输入时先做源码构建或预览。只用 V1/Web 不需要官方包。见 [iOS 扩展教程](official-addon/README.md)。
 
 已有 `turbo-io` 技能也可使用，见[技能安装与更新](docs/AGENT_SKILL.md)；选择鸿蒙时，应同时提供 [HarmonyOS 安装教程](harmony-sdk/README.md)，不要套用 iOS/Android 宿主合并流程。
 

@@ -8,7 +8,7 @@
 
 ## V2 增加了什么
 
-官方 App 获取入口：[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)。可将此链接、本仓库和[首页提示词](../README.md#让-claude-code--codex-帮你接入)交给 Claude Code / Codex，按[分平台接入说明](../docs/AI_SETUP.md)检查和构建。**商店安装不等于已取得可合并的未加密Runner.app**，缺少兼容输入时先做预览，不跳过下面的门槛。
+**iOS需用户自行解决砸壳／合法未加密应用副本的准备问题。我们不提供砸壳IPA、砸壳文件、下载来源或代砸壳服务。** 商店安装不等于取得可合并的未加密Runner.app。准备好兼容副本后，可将本仓库和[首页提示词](../README.md#让-claude-code--codex-帮你接入)交给Claude Code / Codex，按[分平台接入说明](../docs/AI_SETUP.md)检查和构建；缺少输入时先做预览，不跳过门槛。首页的官方下载链接用于Android接入，不是iOS砸壳包来源。
 
 ### 新增适配：官方 1.0.4（195）+ Strix OS 1.0.4.8
 

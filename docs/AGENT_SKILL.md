@@ -2,7 +2,7 @@
 
 仓库提供标准 Agent Skills 目录 `skills/turbo-io`，供 Codex 与 Claude Code 读取。用途是非商业学习研究的环境检查、源码获取、Web预览、iOS独立SDK、iOS/Android官方扩展构建配置和Codex bridge接入，不包含密钥、IPA/APK，也不会绕过签名与用户授权。许可见 [LICENSING.md](LICENSING.md)。
 
-不想先安装技能，可直接复制[首页提示词](../README.md#让-claude-code--codex-帮你接入)，把[雷鸟官方下载页](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)和仓库地址交给助手；完整流程见 [AI_SETUP.md](AI_SETUP.md)。技能与直接提示词是两种引导方式，不需要同时使用。
+不想先安装技能，可直接复制[首页提示词](../README.md#让-claude-code--codex-帮你接入)。Android把[雷鸟 AI Android 官方下载入口](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)和仓库地址交给助手；iOS官方扩展的砸壳／合法未加密副本需自行准备，项目不提供文件、来源或砸壳服务。完整流程见 [AI_SETUP.md](AI_SETUP.md)。技能与直接提示词是两种引导方式，不需要同时使用。
 
 ## 一行安装
 
