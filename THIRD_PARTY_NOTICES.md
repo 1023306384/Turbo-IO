@@ -1,5 +1,9 @@
 # Third-party components
 
+HarmonyOS (`harmony-sdk/`) is an original ArkTS/ArkUI client and protocol implementation, not a modified official app. It depends on AMap Harmony packages pinned to 11.2.0 (navigation with bundled map APIs, location, search and common) from the official ohpm registry. Those SDKs/services remain subject to their own licensing, API-key and privacy requirements; they are not relicensed under PolyForm. They are downloaded during build, not distributed here as pre-signed apps. Users supply their own provider keys and signing material.
+
+The Opus 1.5.2 source tree under `core-probe/Vendor/opus-1.5.2` is now included in full for the Harmony native audio CMake build, in addition to the earlier iOS build dependencies. Its upstream `COPYING` and source notices remain unchanged.
+
 V2 (`official-addon/`) adds original extension sources and local preparation/signing tools only. No new official application executable, decrypted image, IPA, vendor framework or signing material is shipped in that directory. The official app is a user-supplied interoperability target, not a component licensed by this repository. Existing V1 dependency notices below remain unchanged.
 
 The root PolyForm Noncommercial 1.0.0 license covers original Turbo IO material the project has authority to license, not third-party components, vendor binaries, extracted interfaces or their trademarks. Previously granted MIT permissions remain unaffected; see docs/LICENSING.md. Do not replace any upstream license with the root license.
