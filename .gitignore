@@ -19,3 +19,13 @@
 *.jsonl
 **/private/
 **/*PrivateBootstrap*
+*.hap
+*.app
+*.p7b
+*.cer
+**/.cxx/
+**/.hvigor/
+**/oh_modules/
+**/.idea/
+**/local.properties
+/harmony-sdk/build-profile.json5

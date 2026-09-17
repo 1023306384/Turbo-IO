@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 
 // Exact, visually reviewed documentation captures, not a blanket PNG exclusion.
 const reviewedScreenshots = new Map([
+  ['harmony-sdk/entry/src/main/resources/base/media/rayneo_home_hero.png', '426720b141311bc859bc59f31763790250a898ef974708d0e69e4841180c51b1'], // Reviewed synthetic glasses illustration, no account/device screenshot.
   ['official-addon/docs/home-tabs-glass-light.png', '12c74fe54a48d2f6b4b5371381f7308732f8b35b07465ecf29728f33dbc969b4'],
   ['official-addon/docs/home-tabs-glass-dark.png', '2f14655122697a4dd0870147fb6bf71417f8dfea82a45670443e2dd1e13c9407'],
   ['official-addon/docs/navigation-search.png', 'd6a4dcb745bd87e67884fa686d87d033d9b557bd70a31cea4fc8098f7935245c'],
@@ -16,6 +17,13 @@ const reviewedScreenshots = new Map([
   ['docs/screenshots/app-tools.png', '8d0ae97490dea2d772196ca529b3a9fb82dc4966d66ad1ab8ea4e5ef1befa2e1'],
   ['docs/screenshots/web-chat.png', '61d132ff1b925e158560b3c11aa27f6403be5d6d8a71c5e6fff547cbbc104423'],
   ['docs/screenshots/web-menu.png', '62d9a269e8119d99b30ae7a6592544f9279d53d552d9a8b08baa0d2eee4af3dd'],
+]);
+// Exact upstream Opus generated weight tables. Still scan their text for credentials.
+const reviewedLargeSources = new Map([
+  ['core-probe/Vendor/opus-1.5.2/dnn/dred_rdovae_dec_data.c','639d15d2644043d4fec7442e9f46b51ab19f639420e7d57859609c6ecdb24abf'],
+  ['core-probe/Vendor/opus-1.5.2/dnn/dred_rdovae_enc_data.c','2831f195a9a2a6d937084bb49b65e6beabb270ac16a08c20721775fc6cac04b5'],
+  ['core-probe/Vendor/opus-1.5.2/dnn/fargan_data.c','a1939c859a41f4352ad427fa0fa3348306fdd6cfd64a9bf6493bae96b322d323'],
+  ['core-probe/Vendor/opus-1.5.2/dnn/nolace_data.c','5df145d3850d48a89eb27a8512970fde76a401ebf19055f2d7c29213aef7ef04'],
 ]);
 
 // Values are never printed. Regex scanning is a release gate, not a guarantee.
@@ -47,10 +55,16 @@ export function audit(root){
     }
     const dependency=/^core-probe\/Frameworks\/(?:RayneoNet|CocoaAsyncSocket|OpenSSL|RayneoLog|SwiftProtobuf|CocoaLumberjack|SSZipArchive)\.framework\//.test(relative) || relative==='core-probe/Vendor/opus-ios/libopus.a';
     if(dependency)return; // Explicit binary build dependencies; reviewed via the hash inventory.
-    if(/\.(?:ipa|apk|dex|jar|jks|keystore|a|o|dylib|so|p12|pem|key|mobileprovision|wav|ogg|pcm|mp3|m4a|png|jpg|zip|log|jsonl)$/i.test(p))findings.push({file:relative,rule:'non-source-artifact'});
-    if(s.size>2*1024*1024){findings.push({file:relative,rule:'oversize-review'});return;}
+    if(/\.(?:ipa|apk|hap|har|app|dex|jar|jks|keystore|a|o|dylib|so|p12|p7b|cer|pem|key|mobileprovision|wav|ogg|pcm|mp3|m4a|png|jpg|zip|log|jsonl)$/i.test(p))findings.push({file:relative,rule:'non-source-artifact'});
+    if(relative==='harmony-sdk/build-profile.json5')findings.push({file:relative,rule:'local-signing-config'});
+    if(s.size>2*1024*1024 && (!reviewedLargeSources.has(relative)||createHash('sha256').update(fs.readFileSync(p)).digest('hex')!==reviewedLargeSources.get(relative))){findings.push({file:relative,rule:'oversize-review'});return;}
     const b=fs.readFileSync(p);if(b.includes(0)){findings.push({file:relative,rule:'binary-content'});return;}
-    b.toString('utf8').split('\n').forEach((line,i)=>{for(const [rule,re]of rules)if(re.test(line))findings.push({file:relative,line:i+1,rule});});
+    b.toString('utf8').split('\n').forEach((line,i)=>{for(const [rule,re]of rules){
+      // One synthetic host in mocked HTTP tests; still scan the rest of that line.
+      const checked=rule==='dedicated-weather-tenant' && relative==='harmony-sdk/tests/remote-services.test.mjs'
+        ? line.replaceAll("'test." + "re.qweatherapi.com'", "'mock-weather-host'") : line;
+      if(re.test(checked))findings.push({file:relative,line:i+1,rule});
+    }});
   }
   walk(root);return {files,findings};
 }

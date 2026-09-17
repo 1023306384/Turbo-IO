@@ -6,17 +6,20 @@
 
 1. 本仓库：<https://github.com/Turbo1123/Turbo-IO>。
 2. Android使用 [雷鸟 AI Android 官方下载入口](https://rayneo.cn/commonPage/venus/appDownload/index_m.html)，不是Turbo IO安装包或固定旧版本存档。**iOS官方扩展需用户自行解决砸壳／合法未加密应用副本的准备，我们不提供砸壳IPA、文件、下载来源或代砸壳服务。** 页面即使展示iOS商店渠道，也不等于可获取合并所需的未加密Runner.app。2026-09-15已核对页面可访问，未据此宣称其即时下载包通过校验。
-3. [首页可复制的完整提示词](../README.md#让-claude-code--codex-帮你接入)，并选好自己的平台。不确定路线时让助手先解释四个选项，而不是同时搭建全部组件。
+3. [首页可复制的完整提示词](../README.md#让-claude-code--codex-帮你接入)，并选好自己的平台。不确定路线时让助手先解释五个选项，而不是同时搭建全部组件。
+
+原生鸿蒙 HarmonyOS、iOS 独立 SDK 与仅 Web 预览不需要官方应用副本；鸿蒙按 [源码安装教程](../harmony-sdk/README.md) 自行编译签名。
 
 在电脑端编程助手中打开自己的工作目录，允许其在任务范围内读取文件、执行构建命令。Codex 的本机项目使用方式可参考 [官方入门](https://learn.chatgpt.com/docs/quickstart)。Claude Code 使用项目目录中的同一份自然语言提示词即可，不依赖本项目专用云账号。若助手只能远端聊天，先让它生成清单，转到能访问开发电脑的环境继续；云端不能看到你的 USB 手机。
 
 **不要把 API Key、签名密码、登录验证码当作“第三样东西”发进提示词。** 这些只在你自己的程序设置、本机凭据存储或交互式签名工具内输入。
 
-## 四条路线，不混用
+## 五条路线，不混用
 
 | 目标 | 助手先做 | 用户提供 / 确认 | 当前门槛 |
 | --- | --- | --- | --- |
 | Web 预览 | `node display-observer/server.mjs --no-proxy`，检查页面 | 一个可用端口和浏览器 | 不要误报为真实眼镜画面；不需要官方包、Key或手机 |
+| 原生鸿蒙 | [鸿蒙教程](../harmony-sdk/README.md)，DevEco 打开 `harmony-sdk`，先跑测试和无维护者签名构建 | 自己的华为开发者签名、手机调试授权、各服务 Key | 不需要官方 APK/IPA；系统通知转发未实现，需要受限权限与用户授权；不提供 HAP |
 | iOS 独立 SDK | [配置文档](CONFIGURATION.md)，`scripts/start.mjs --local` 或 `--device` | macOS/Xcode、自己的签名和服务配置 | 切换客户端时才先官方解绑、系统忽略，再重新配对 |
 | iOS 官方扩展 | [扩展说明](../official-addon/README.md)，先测试与零密钥预览，再按条件本地合并 | 合法兼容未加密 `Runner.app`、个人证书/描述文件与设备授权 | 1.0.4（195）或1.0.2（67），对应UUID及thin arm64校验；普通商店加密IPA不能直接合并 |
 | Android 官方扩展 | [Android教程](../android-addon/README.md)，检查JDK/SDK，运行build和package脚本 | 合法官方APK、自己的keystore、测试手机和服务配置 | 当前1.0.4（195）且精确SHA匹配；非Root设备已由用户实机验证可用 |
