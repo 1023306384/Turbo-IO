@@ -1,4 +1,4 @@
-# Turbo IO · 原生鸿蒙 SDK 与研究客户端
+# Turbo IO · 原生鸿蒙 HarmonyOS SDK 与研究客户端
 
 面向开发者的雷鸟 iO / RayNeo iO **原生 HarmonyOS** 客户端，ArkTS / ArkUI + BLE 协议 HAR。不运行 Android APK，不注入官方 App，也不需要 Root。
 

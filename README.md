@@ -1,6 +1,6 @@
 # Turbo IO · 雷鸟 iO / RayNeo iO 非官方 SDK
 
-面向开发者的智能眼镜 SDK 与 App 扩展研究项目：iOS、Android，以及新增的原生鸿蒙客户端。自有模型、搜索、录音研究、Agent 与眼镜导航。**不是给小白直接安装的成品 App。**
+面向开发者的智能眼镜 SDK 与 App 扩展研究项目：iOS、Android，以及新增的原生鸿蒙 HarmonyOS 客户端。自有模型、搜索、录音研究、Agent 与眼镜导航。**不是给小白直接安装的成品 App。**
 
 仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。只发布源码与明确列出的依赖，**不提供 IPA / APK / HAP 安装包、预签名 App、签名证书、个人密钥或测试账号**。需要自行配置、编译和签名。
 
@@ -11,7 +11,7 @@
 | iOS 独立 SDK（V1） | 自己配对、连接眼镜，研究完整客户端 | [本页快速开始](#快速开始) |
 | iOS 官方 App 扩展（V2） | 保留官方连接/ASR，加入模型、导出、新闻、导航 | [iOS 扩展教程](official-addon/README.md) |
 | **Android 官方 App 扩展** | 保留 Android 官方流程，加入模型、TinyFish、录音导出、真实/模拟导航 | **[Android 编译、配置与导航教程](android-addon/README.md)** |
-| **原生 HarmonyOS SDK / 客户端** | Mate X5 原生鸿蒙直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | **[鸿蒙从源码安装与配置](harmony-sdk/README.md)** |
+| **原生鸿蒙 HarmonyOS SDK / 客户端** | Mate X5 原生鸿蒙直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | **[鸿蒙 HarmonyOS 从源码安装与配置](harmony-sdk/README.md)** |
 
 **别混用配对说明：** V1 与鸿蒙独立客户端首次切换前，要先在官方 App 解绑、在原手机系统蓝牙忽略设备；iOS / Android 官方扩展运行在宿主内，沿用宿主连接，不需要为扩展反复解绑。不能同时让独立客户端和官方宿主争抢连接。
 
@@ -33,7 +33,7 @@
 请帮我在这台电脑上接入 Turbo IO，仅用于个人非商业学习研究。
 源码：https://github.com/Turbo1123/Turbo-IO
 官方 App 下载页：https://rayneo.cn/commonPage/venus/appDownload/index_m.html
-目标：[原生鸿蒙客户端 / Android 官方扩展 / iOS 官方扩展 / iOS 独立 SDK / 仅 Web 预览]
+目标：[原生鸿蒙 HarmonyOS 客户端 / Android 官方扩展 / iOS 官方扩展 / iOS 独立 SDK / 仅 Web 预览]
 
 先读取 README、docs/AI_SETUP.md 和目标平台文档，检查电脑环境、现有项目改动及设备状态。
 没有源码时克隆到新的目录；使用仓库现成构建、测试和合并脚本，不要只给我操作教程。
