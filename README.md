@@ -11,7 +11,7 @@
 | iOS 独立 SDK（V1） | 自己配对、连接眼镜，研究完整客户端 | [本页快速开始](#快速开始) |
 | iOS 官方 App 扩展（V2） | 保留官方连接/ASR，加入模型、导出、新闻、导航 | [iOS 扩展教程](official-addon/README.md) |
 | **Android 官方 App 扩展** | 保留 Android 官方流程，加入模型、TinyFish、录音导出、真实/模拟导航 | **[Android 编译、配置与导航教程](android-addon/README.md)** |
-| **原生鸿蒙 HarmonyOS SDK / 客户端** | Mate X5 原生鸿蒙直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | **[鸿蒙 HarmonyOS 从源码安装与配置](harmony-sdk/README.md)** |
+| **原生鸿蒙 HarmonyOS SDK / 客户端** | 鸿蒙 HarmonyOS 6.1 实测：直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | **[鸿蒙 HarmonyOS 从源码安装与配置](harmony-sdk/README.md)** |
 
 **别混用配对说明：** V1 与鸿蒙独立客户端首次切换前，要先在官方 App 解绑、在原手机系统蓝牙忽略设备；iOS / Android 官方扩展运行在宿主内，沿用宿主连接，不需要为扩展反复解绑。不能同时让独立客户端和官方宿主争抢连接。
 
