@@ -11,6 +11,10 @@ test('native and packaging allowlists agree; mismatches fail closed',()=>{
     assert.equal(inspectedHost({...info,CFBundleIdentifier:'other'},h.uuid),null);
     assert.equal(inspectedHost({...info,CFBundleExecutable:'Other'},h.uuid),null);
     assert.equal(inspectedHost(info,'0'.repeat(32)),null);
+    for(const other of inspectedHosts.filter(x=>x!==h)){
+      assert.equal(inspectedHost(info,other.uuid),null);
+      assert.equal(inspectedHost({...info,CFBundleVersion:other.build},h.uuid),null);
+    }
   }
   assert.equal(inspectedHost({},null),null);
 });

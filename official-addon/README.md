@@ -10,7 +10,11 @@
 
 **iOS需用户自行解决砸壳／合法未加密应用副本的准备问题。我们不提供砸壳IPA、砸壳文件、下载来源或代砸壳服务。** 商店安装不等于取得可合并的未加密Runner.app。准备好兼容副本后，可将本仓库和[首页提示词](../README.md#让-claude-code--codex-帮你接入)交给Claude Code / Codex，按[分平台接入说明](../docs/AI_SETUP.md)检查和构建；缺少输入时先做预览，不跳过门槛。首页的官方下载链接用于Android接入，不是iOS砸壳包来源。
 
-### 新增适配：官方 1.0.4（195）+ Strix OS 1.0.4.8
+### 最新适配：官方 1.0.5（201）+ Strix OS 1.0.4.12
+
+新增精确版本 / Build / Runner UUID 校验，保留 1.0.4（195）和 1.0.2（67）。非越狱 iPhone Air 私用研究版安装与扩展加载已确认；用户完成 **Strix OS 1.0.4.12** 升级后反馈「一切正常」，当前未报告兼容问题。本次不改眼镜协议，不分发固件；该反馈不等于逐项全量回归或所有机型均已验证。详见[1.0.5 适配与升级说明](docs/COMPATIBILITY_105.md)。
+
+### 历史适配：官方 1.0.4（195）+ Strix OS 1.0.4.8
 
 保留旧版 1.0.2（67），新增精确版本 / Build / Runner UUID 校验；不放宽未知包限制。非越狱 iPhone Air 的个人签名研究版已获得升级后语音、自有模型与导航正常的用户反馈。新版底栏识别“回忆、探索”，第五项 TurboIO 使用深浅色毛玻璃。详见[版本适配与验收说明](docs/COMPATIBILITY_104.md)。
 
@@ -72,9 +76,9 @@ xcrun simctl launch booted io.turboio.research.preview
 
 ### 1. 兼容性门槛
 
-**本目录适配对象：iOS「雷鸟 AI 眼镜」1.0.4（Build 195）、1.0.2（Build 67）。其他iOS官方版本尚未适配；Android使用独立的 [android-addon](../android-addon/README.md)，不能套用此工具。** 这里的版本指官方 App，不是眼镜固件，也不是 Turbo IO V2 的版本号。
+**本目录适配对象：iOS「雷鸟 AI 眼镜」1.0.5（Build 201）、1.0.4（Build 195）、1.0.2（Build 67）。其他iOS官方版本尚未适配；Android使用独立的 [android-addon](../android-addon/README.md)，不能套用此工具。** 这里的版本指官方 App，不是眼镜固件，也不是 Turbo IO V2 的版本号。
 
-- Bundle ID 为 `com.rayneo.venus.pub`；`1.0.4 / 195` 对应 Runner UUID `261c8e78f9553d7d85f713b9082972cf`，`1.0.2 / 67` 对应 `eeea85e54114313cb65173c90a6b5d3c`。
+- Bundle ID 为 `com.rayneo.venus.pub`；`1.0.5 / 201` 对应 Runner UUID `748fd301da603095a2449bd0558faca5`，`1.0.4 / 195` 对应 `261c8e78f9553d7d85f713b9082972cf`，`1.0.2 / 67` 对应 `eeea85e54114313cb65173c90a6b5d3c`。
 - 合并前核对源 App 的 `Info.plist` 中版本 / Build 组合。相同版本号仍需匹配对应 UUID；其他官方版本需要重新适配，不要修改版本号或跳过检查强行合并。
 - 输入为合法可用、未加密、thin arm64 的 `Runner.app`，可以是用户自行准备的 IPA 中的 `Payload/Runner.app`。工具不处理加密绕过；遇到加密镜像、未知版本、已嵌入扩展、不足的头部空间、未审查的应用扩展/多架构镜像/符号链接会拒绝。
 - UUID 用于版本/ABI 适配，不是完整来源安全鉴定；仅使用自己信任的应用源。
