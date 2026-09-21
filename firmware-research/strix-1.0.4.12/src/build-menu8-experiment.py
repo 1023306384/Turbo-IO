@@ -200,6 +200,6 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('output',type=Path)
     p.add_argument('--baseline',type=Path,default=ROOT/'work/baseline')
-    p.add_argument('--photo',type=Path,default=ROOT/'assets/turbo-photo.png')
+    p.add_argument('--photo',type=Path,default=ROOT/'assets/turbo-photo-firmware.png')
     a=p.parse_args()
     build(a.output.resolve(),a.baseline.resolve(),a.photo.resolve())

@@ -51,7 +51,7 @@ AP MD5：`7704e86ebfdd3ff9a84c0f83060c21c3`（已替换原 AP 的旧 MD5）。
 
 <img src="assets/turbo-photo-on-glasses.png" alt="Turbo Photo R3 真机实拍：雷鸟 iO 镜片显示自定义头像" width="420" />
 
-固件内的 [88×98 PNG 原素材](assets/turbo-photo.png) 仍保留，头像所有者已明确同意公开。本次仅更换文档展示图片，**未修改原素材或实测固件，Release 哈希不变**。
+另可查看作者提供的[彩色原图](assets/turbo-photo.png)，仅用于展示，不代表眼镜能够彩色显示。固件使用的 88×98 PNG 保存在 `assets/turbo-photo-firmware.png`，构建脚本仍引用这一精确素材。头像所有者已明确同意公开；**未修改固件内嵌图片或实测固件，Release 哈希不变**。
 
 - `src/menu8-*.c/.h`：控制器、独立 UI 对象、原生 LVGL 绑定和目标 hook。
 - `src/build-menu8-experiment.py`：严格绑定原厂 AP 哈希、保留原字段、生成新 AP 与清单的**离线**构建器。

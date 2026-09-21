@@ -52,6 +52,8 @@ uv run --no-project --with-requirements requirements.txt python src/test-menu8-a
 
 构建器保留严格的原 AP 和图片哈希：先复现小实验，而不是接受任意文件或任意版本。生成报告包含 patch 白名单、目标符号、跳板、AP 增长与成员差异；ARM 模拟仍 mock 原生服务。**公开化只调整输入路径/元数据组织，不放松原 AP、图片、成员或容量检查。**
 
+默认图片输入是 `assets/turbo-photo-firmware.png`，它保留实测固件的 88×98 原字节；`assets/turbo-photo.png` 是作者的彩色展示原图，不参与构建，不能拿它替换固定哈希输入。
+
 工具链变化可能导致新 AP 不与 R3 相同，ZIP 重建也包含时间戳变化。先比较 `payload/nuttx_ap.bin` 和指定 R3 AP 的 SHA-256，逐成员审核；不要直接拿新候选去刷。实验固件文件名保留 UNFLASHED，生成报告保持 runtimeValidated=false。
 
 ### 精确复建记录
