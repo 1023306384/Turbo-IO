@@ -47,9 +47,11 @@ AP MD5：`7704e86ebfdd3ff9a84c0f83060c21c3`（已替换原 AP 的旧 MD5）。
 
 ## 图像与源码
 
-下图是实际嵌入 AP 的 PNG 源素材，不是镜片实拍。头像所有者已明确同意公开；不更换图片，以保留本次实测产物的精确身份。
+下图为作者提供的**眼镜实际显示效果实拍**（视频画面截图），不是渲染图或模拟预览。镜片中显示的是本次 R3 内嵌的自定义头像。
 
-![已获作者授权的实验 PNG，88×98](assets/turbo-photo.png)
+<img src="assets/turbo-photo-on-glasses.png" alt="Turbo Photo R3 真机实拍：雷鸟 iO 镜片显示自定义头像" width="420" />
+
+固件内的 [88×98 PNG 原素材](assets/turbo-photo.png) 仍保留，头像所有者已明确同意公开。本次仅更换文档展示图片，**未修改原素材或实测固件，Release 哈希不变**。
 
 - `src/menu8-*.c/.h`：控制器、独立 UI 对象、原生 LVGL 绑定和目标 hook。
 - `src/build-menu8-experiment.py`：严格绑定原厂 AP 哈希、保留原字段、生成新 AP 与清单的**离线**构建器。
