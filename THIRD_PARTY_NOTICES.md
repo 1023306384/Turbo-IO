@@ -15,3 +15,9 @@ The root PolyForm Noncommercial 1.0.0 license covers original Turbo IO material 
 - RayNeo and other product names identify interoperability targets; this project is not an official manufacturer release.
 
 Before publication, check the actual dependency inventory and retain each supplied component's original notices. The presence of a component in a local development environment is not recorded here as a license grant. IPA/App distribution, signing certificates, private service credentials and user data are outside this source release.
+
+## Experimental Strix OS 1.0.4.12 firmware artifacts
+
+The `firmware-strix-1.0.4.12-turbophoto-r3` prerelease contains an experimental modified OTA archive, its AP image, and a locally repacked original-content baseline. Original firmware code, libraries, and resources remain copyrighted by RayNeo, Bestechnic, and their respective rights holders. These binaries are not original firmware source code and are not relicensed under the repository's PolyForm license. No official endorsement or guaranteed recovery is implied. Original research code follows the repository license. The embedded Turbo portrait was explicitly authorized for publication by its owner.
+
+These are high-risk research specimens, not production firmware. Read `firmware-research/strix-1.0.4.12/docs/SAFETY.md` before handling them. The baseline is not a full flash backup or a validated unbrick image.

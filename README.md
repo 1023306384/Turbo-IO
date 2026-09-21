@@ -4,6 +4,14 @@
 
 原创代码仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。发布源码与明确列出的依赖，另在 Release 提供下述原厂砸壳 IPA 作为 iOS 扩展输入。**不提供已合并 Turbo IO 的 IPA / APK / HAP 成品包、个人预签名 App、签名证书、个人密钥或测试账号**。需要自行配置、编译和签名。
 
+## 高风险固件实验 · 自定义 UI 与图片
+
+> **试验用品，不是日常固件；非开发者请勿尝试，务必不要随便刷。** 本次要验证的是能否经官方 OTA 运行修改后的 AP、能否开发眼镜端页面并显示 PNG，不是为了做固件而做固件，也不是推荐替换官方系统。
+
+2026-09-21，基于 **Strix OS 1.0.4.12** 的 Turbo Photo R3 获得用户真机确认：更新后显示自定义图片，图片页可退出并再次进入。仅 AP 负载改变，另 13 项不变；不等于完整 OTA 只写 AP。**不保证回滚或救砖**：掉电、意外中断、版本不匹配、错误代码/资源都可能导致无法启动或失去 OTA。不能宣传“几乎刷不死”。
+
+**[研究过程、源码、已知问题与离线测试](firmware-research/strix-1.0.4.12/README.md)** · **[实验固件 Pre-release 与校验值](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-turbophoto-r3)**。普通 SDK/App 开发不需要刷这个固件。尚未实现蓝牙任意传图、通用眼镜 App 安装或自由替换整个系统 UI；长期稳定性和故障恢复未验。
+
 ## iOS 原厂砸壳 IPA 下载
 
 **[雷鸟 AI iOS 1.0.5（201）原厂砸壳 IPA](https://github.com/Turbo1123/Turbo-IO/releases/tag/rayneo-ios-1.0.5-201)**。
@@ -55,7 +63,7 @@
 | 其他 App 系统通知转发 | iOS 系统共享通知，需用户授权 | 沿用官方/系统权限；不保证重签后官方推送 | 沿用官方通知能力与权限 | **未实现**：需受限订阅权限、扩展和用户授权 |
 | Web 显示观察 | **实测**：USB 状态观察＋样式预览，非像素投屏 | 不把 V1 观察能力直接套用 | 未迁移 V1 观察接口 | 未迁移 V1 观察接口 |
 
-**四端都不支持任意替换眼镜固件 UI；有限卡片/通知布局不等于自由绘制整个系统。Claude Code、Hermes、WorkBuddy、OpenClaw 也不能仅凭下拉选项视作已接通。**
+**四端日常 SDK/App 协议都不支持任意替换眼镜固件 UI；有限卡片/通知布局不等于自由绘制整个系统。另有独立的高风险 R3 固件实验，验证了新增页面和嵌入 PNG，不代表四端已有动态绘图能力。Claude Code、Hermes、WorkBuddy、OpenClaw 也不能仅凭下拉选项视作已接通。**
 
 详细证据与使用限制：[iOS V1](#能力与边界) · [iOS V2](official-addon/docs/VALIDATION.md) · [Android](android-addon/docs/VALIDATION.md) · [鸿蒙 HarmonyOS](harmony-sdk/VALIDATION.md)。各端都需自己的服务配置与签名，**不提供已集成 Turbo IO 的成品安装包或个人签名包**；上方原厂砸壳 IPA 仅作为 iOS 宿主输入。
 
@@ -109,7 +117,7 @@ Key由我在本机安全填写，不索取聊天明文、不复用维护者配�
 - **iOS 1.0.4 + Strix OS 1.0.4.8**：保留 iOS 1.0.2 支持；非越狱 iPhone 上个人签名研究版的语音、自有模型与导航回归正常。新增自适应毛玻璃 TurboIO 底栏。[兼容性与预览](official-addon/docs/COMPATIBILITY_104.md)
 - **导航**：三种出行方式、地图搜索和眼镜文字指引，不是地图投屏。两端实现与验收不同，当前均保留前台/4分钟显示等研究限制。[iOS 导航](official-addon/docs/NAVIGATION.md) · [Android 导航](android-addon/README.md#5-导航怎么用)
 
-模型 Key、搜索 Key、个人提示词与私有知识库由使用者自己配置。除上方明确列出的原厂砸壳 IPA 外，不提供其他官方安装包、解密产物、固件或个人签名材料；未知二进制版本不得跳过兼容检查。iOS 详细版本/UUID见 [V2文档](official-addon/README.md#1-兼容性门槛)，Android输入校验见 [Android文档](android-addon/README.md#2-兼容与安装边界)。
+模型 Key、搜索 Key、个人提示词与私有知识库由使用者自己配置。二进制例外仅限上方原厂砸壳 IPA，以及独立标注警告的 R3 实验固件/原厂内容基线 Release；不提供合并后手机成品包或个人签名材料。固件中的原厂代码/资源版权不变，实验附件不是官方升级推荐；未知二进制版本不得跳过兼容检查。iOS 详细版本/UUID见 [V2文档](official-addon/README.md#1-兼容性门槛)，Android输入校验见 [Android文档](android-addon/README.md#2-兼容与安装边界)。
 
 ### 按需阅读
 
@@ -202,7 +210,7 @@ node display-observer/server.mjs --no-proxy
 
 ### 当前边界
 
-- **不能替换眼镜固件内置 UI，也不是刷机/自定义桌面工具。** 除自定义通知外，研究中已验证有限 A2UI 仪表盘文字/布局卡片；鸿蒙当前验证到短文字卡。不能据此宣称支持任意页面、HTML、Canvas 或第三方 App 渲染。
+- **日常 SDK/App 不能通过普通协议任意替换眼镜固件内置 UI，也不是刷机/自定义桌面工具。** 除自定义通知外，研究中已验证有限 A2UI 仪表盘文字/布局卡片；鸿蒙当前验证到短文字卡。独立的 [R3 固件实验](firmware-research/strix-1.0.4.12/README.md) 已验证新增图片页面，但不能据此宣称支持任意页面、HTML、Canvas 或通用第三方 App 安装。
 - 对话、待办、提词器、天气等可以修改或下发内容，但只能使用眼镜自带的 UI 模板，不能自由改变模板排版与交互。Web 预览样式也不会变成镜片固件 UI。
 - **不能与官方 App 同时连接同一副眼镜。** 使用 Turbo IO 时停止官方 App 的连接；切换客户端需正确处理已有绑定，不要同时抢连接。
 - 不能保证完整离线录音、任意长度的无损补传、长期后台永不掉线、强退后可靠推送或所有固件都兼容。

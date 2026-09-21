@@ -18,6 +18,10 @@
 #import "PrivateBootstrap.h"
 #import "ResearchCatalog.h"
 #import "ResearchUI.h"
+#if TIO_OTA_RESEARCH_ENABLED
+#import "ExperimentalOTAUI.h"
+#import "ExperimentalOTAFeed.h"
+#endif
 #import "HomeTabBridge.h"
 #import "KnowledgeUI.h"
 #import "KnowledgeClient.h"
@@ -331,6 +335,9 @@ static void AlwaysOnHook(id self,SEL cmd,id value) {
     if([r[@"key"] isEqual:@"agent"])return;
     if([r[@"key"] isEqual:@"knowledge"]){TIOOpenKnowledge(self);return;}
     if([r[@"key"] isEqual:@"navigation"]){[self.navigationController pushViewController:TIONavigationController() animated:YES];return;}
+#if TIO_OTA_RESEARCH_ENABLED
+    if([r[@"key"] isEqual:@"experimentalOTA"]){[self.navigationController pushViewController:TIOExperimentalOTAController() animated:YES];return;}
+#endif
     if([@[@"thinking",@"search",@"exit",@"capture"] containsObject:r[@"key"]])return;
     NSInteger section=[r[@"section"] integerValue],row=[r[@"row"] integerValue];
     if(section>=0){[self legacySelect:tableView at:[NSIndexPath indexPathForRow:row inSection:section]];return;}
@@ -409,6 +416,9 @@ __attribute__((constructor)) static void Load(void) {
     dispatch_async(dispatch_get_main_queue(),^{
         @autoreleasepool {
             if(![NSBundle.mainBundle.bundleIdentifier isEqual:TargetBundle])return;
+#if TIO_OTA_RESEARCH_ENABLED
+            TIOStartExperimentalOTAFeedIfMarked();
+#endif
             Prefs=[[NSUserDefaults alloc]initWithSuiteName:Domain];Controller=[TIOController new];
             ImportPrivateBootstrap();
             TIONewsConfigure(^TIONewsCancel(NSString *prompt,void (^completion)(NSString *,NSString *)){

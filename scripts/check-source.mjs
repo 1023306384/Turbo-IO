@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 
 // Exact, visually reviewed documentation captures, not a blanket PNG exclusion.
 const reviewedScreenshots = new Map([
+  ['firmware-research/strix-1.0.4.12/assets/turbo-photo.png', '738169867ec0ca778cd6ce14e803aaa508bf16f8e169d1081db3e622d571db24'], // Exact embedded portrait, owner explicitly authorized publication; no screenshot/account metadata.
   ['harmony-sdk/entry/src/main/resources/base/media/rayneo_home_hero.png', '426720b141311bc859bc59f31763790250a898ef974708d0e69e4841180c51b1'], // Reviewed synthetic glasses illustration, no account/device screenshot.
   ['official-addon/docs/home-tabs-glass-light.png', '12c74fe54a48d2f6b4b5371381f7308732f8b35b07465ecf29728f33dbc969b4'],
   ['official-addon/docs/home-tabs-glass-dark.png', '2f14655122697a4dd0870147fb6bf71417f8dfea82a45670443e2dd1e13c9407'],
