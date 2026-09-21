@@ -10,6 +10,8 @@
 
 2026-09-21，基于 **Strix OS 1.0.4.12** 的 Turbo Photo R3 获得用户真机确认：更新后显示自定义图片，图片页可退出并再次进入。仅 AP 负载改变，另 13 项不变；不等于完整 OTA 只写 AP。**不保证回滚或救砖**：掉电、意外中断、版本不匹配、错误代码/资源都可能导致无法启动或失去 OTA。不能宣传“几乎刷不死”。
 
+**为什么只改 application（`nuttx_ap.bin`）？** 菜单、页面和 PNG 显示的目标代码位于 AP；先把改动限制在这里，保留其余原厂组件，减少变量与额外风险，验证眼镜应用/UI 扩展能力，而非重写系统。AP 不是隔离沙盒，错误仍可能导致整机无法启动；“只改 AP”不是不会变砖的保证。[设计取舍](firmware-research/strix-1.0.4.12/docs/PROCESS.md)
+
 **[研究过程、源码、已知问题与离线测试](firmware-research/strix-1.0.4.12/README.md)** · **[实验固件 Pre-release 与校验值](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-turbophoto-r3)**。普通 SDK/App 开发不需要刷这个固件。尚未实现蓝牙任意传图、通用眼镜 App 安装或自由替换整个系统 UI；长期稳定性和故障恢复未验。
 
 ## iOS 原厂砸壳 IPA 下载
