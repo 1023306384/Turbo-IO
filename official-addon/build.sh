@@ -24,12 +24,27 @@ if [[ ${TIO_AMAP_ENABLED:-0} == 1 ]]; then
 fi
 ota_options=()
 ota_sources=()
+native_options=()
+native_sources=()
+navigation_ui=NavigationUI.m
+if [[ ${TIO_NATIVE_NAV:-0} == 1 ]]; then
+  [[ ${TIO_OTA_RESEARCH_ENABLED:-0} == 1 && "$mode" == embedded ]] || { echo 'TNV1 requires explicit TIO_OTA_RESEARCH_ENABLED=1 and embedded mode' >&2; exit 2; }
+  ota_root=../firmware-research/strix-1.0.4.12/native-navigation/phone
+  navigation_ui="$ota_root/NavigationUI.m"
+  native_options=(-DTIO_NATIVE_NAV=1 -DTIO_DISPLAY_PHONE=1 -DTIO_DISPLAY_DIAGNOSTICS=1 -DTIO_DISPLAY_FLASH=1 -DTIO_IMAGE_RX_LAB=1 -DTIO_IMAGE_RX_WIDE=1 -I "$ota_root" -I "$PWD" -framework PhotosUI -framework ImageIO -framework CoreGraphics)
+  for unit in nav_runtime.c NativeNavigation.m TNVTransport.m NativeNavigationUI.m display_runtime.c display_client.c display_carrier.c DisplayDelta.c DisplayNavigation.m DisplayHUDRenderer.m DisplayReplyObserver.m DisplayPhoneSession.m DisplayPhoneTransport.m DisplayPhoneUI.m DisplayDiagnostics.m ImageUpload.m ImageUploadTransport.m ImageUploadNative.m ImageUploadUI.m; do
+    native_sources+=("$ota_root/$unit")
+  done
+fi
 if [[ ${TIO_OTA_RESEARCH_ENABLED:-0} == 1 ]]; then
-  [[ "$mode" == embedded && "$bundle" == com.rayneo.venus.pub ]] || { echo 'R3 research requires embedded original bundle; see firmware safety documentation' >&2; exit 2; }
-  ota_root=../firmware-research/strix-1.0.4.12/ios-reference
+  [[ "$mode" == embedded && "$bundle" == com.rayneo.venus.pub ]] || { echo 'Firmware research requires embedded original bundle; see firmware safety documentation' >&2; exit 2; }
+  ota_root=${ota_root:-../firmware-research/strix-1.0.4.12/ios-reference}
   ota_options=(-DTIO_OTA_RESEARCH_ENABLED=1 -DTIO_OTA_FLASH_ENABLED=1 -DTIO_OTA_FEED_ARMING_ENABLED=1 -I "$ota_root" -I "$PWD")
   ota_sources=("$ota_root/ExperimentalOTA.m" "$ota_root/ExperimentalOTAGuard.m" "$ota_root/ExperimentalOTAFlash.m" "$ota_root/ExperimentalOTAFeed.m" "$ota_root/ExperimentalOTAUI.m")
   output=build/ota-research/TurboIOPrivateAddon.dylib; mkdir -p build/ota-research
+fi
+if [[ ${TIO_NATIVE_NAV:-0} == 1 ]]; then
+  output=build/native-navigation/TurboIOPrivateAddon.dylib; mkdir -p build/native-navigation
 fi
 sdk_path=$(xcrun --sdk iphoneos --show-sdk-path)
 link_options=()
@@ -43,7 +58,8 @@ xcrun --sdk iphoneos clang -arch arm64 -isysroot "$sdk_path" -miphoneos-version-
   -framework Foundation -framework UIKit -framework Security -framework UniformTypeIdentifiers -framework CoreLocation \
   ${nav_options[@]+"${nav_options[@]}"} \
   ${ota_options[@]+"${ota_options[@]}"} ${ota_sources[@]+"${ota_sources[@]}"} \
-  NavigationModes.m ProtocolContext.m NavigationSubtitleHUD.m NavigationPlaces.m NavigationPlacePicker.m A2UIProtocol.m NavigationCore.m NavigationTeleHUD.m NavigationTransport.m NavigationUI.m ManualHUD.m SubtitleHUDCore.m SubtitleHUD.m \
+  ${native_options[@]+"${native_options[@]}"} ${native_sources[@]+"${native_sources[@]}"} \
+  NavigationModes.m ProtocolContext.m NavigationSubtitleHUD.m NavigationPlaces.m NavigationPlacePicker.m A2UIProtocol.m NavigationCore.m NavigationTeleHUD.m NavigationTransport.m "$navigation_ui" ManualHUD.m SubtitleHUDCore.m SubtitleHUD.m \
   "-DTIO_TARGET_BUNDLE_ID=\"$bundle\"" -install_name "$install_name" "${link_options[@]}" \
   Core.m Profile.m KnowledgeClient.m KnowledgeUI.m ProfileUI.m HomeTabLayout.m HomeTabBridge.m ResearchCatalog.m ResearchUI.m NewsPresentation.m PrivateBootstrap.m WebSearch.m TodoProtocol.m TodoRuntime.m NewsCore.m NewsReader.m NewsTeleprompter.m RecordingExports.m RecordingExportsUI.m RecordingExportsMenu.m RecordingText.m RecordingTextUI.m RecordingTextMenu.m AlwaysOnAudioFiles.m AlwaysOnOgg.m AlwaysOnAudioNative.m AlwaysOnAudioUI.m Addon.m -o "$output"
 codesign --force --sign - "$output"

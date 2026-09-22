@@ -15,7 +15,15 @@ export function validateOptions(o) {
   if(!/^[A-Za-z0-9][A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$/.test(o.bundle||''))throw Error('invalid_bundle');
   if(o.product&&!/^iPhone\d+,\d+$/.test(o.product))throw Error('invalid_explicit_product');
   if(fs.existsSync(o.out))throw Error('output_must_not_exist');
-  if(o['experimental-ota']!==undefined&&(o['experimental-ota']!=='R3'||o.bundle!=='com.rayneo.venus.pub'))throw Error('invalid_experimental_ota_target');
+  if(o['experimental-ota']!==undefined&&(!['R3','TNV1'].includes(o['experimental-ota'])||o.bundle!=='com.rayneo.venus.pub'))throw Error('invalid_experimental_ota_target');
+  if(o['experimental-ota']==='TNV1' && (typeof o.firmware!=='string'||!path.isAbsolute(o.firmware)))throw Error('tnv1_requires_explicit_firmware');
+  if(o.firmware && o['experimental-ota']!=='TNV1')throw Error('unexpected_firmware');
+}
+export function validateResearchPair(symbols, kind, firmware) {
+  const native=symbols.includes('_TNVStart');
+  if(native!==(kind==='TNV1'))throw Error('native_navigation_addon_and_option_must_match');
+  if(kind==='TNV1' && (!Buffer.isBuffer(firmware)||firmware.length!==9258094||
+    createHash('sha256').update(firmware).digest('hex')!=='e2a76fdcf0d3d07d766a7329d2d93b32350cb8309b73fc9c73726498fafddecb'))throw Error('tnv1_firmware_identity_mismatch');
 }
 export function entitlementsFor(p,o) {
   if(!Array.isArray(p.certs)||!p.certs.includes(o.identity.toUpperCase())||!Array.isArray(p.devices)||!p.devices.includes(o.device)||!(Date.parse(p.expires)>Date.now()))throw Error('profile_identity_device_or_expiry_mismatch');
@@ -27,10 +35,10 @@ export function entitlementsFor(p,o) {
 }
 function run(program,args,options={}){return exec(program,args,{stdio:['pipe','pipe','pipe'],...options});}
 function main(){
-  if(process.argv.includes('--help')){console.log('node official-addon/package.mjs --app /absolute/Runner.app --addon /absolute/TurboIOPrivateAddon.dylib --profile /absolute/profile.mobileprovision --identity CERTIFICATE_SHA1 --device YOUR_DEVICE_ID --out /absolute/new-private-output [--bundle com.rayneo.venus.pub] [--product iPhone18,4] [--amap-sdk-root /absolute/build/amap-sdk] [--experimental-ota R3 (HIGH RISK; read firmware-research first)]');return;}
+  if(process.argv.includes('--help')){console.log('node official-addon/package.mjs --app /absolute/Runner.app --addon /absolute/TurboIOPrivateAddon.dylib --profile /absolute/profile.mobileprovision --identity CERTIFICATE_SHA1 --device YOUR_DEVICE_ID --out /absolute/new-private-output [--bundle com.rayneo.venus.pub] [--product iPhone18,4] [--amap-sdk-root /absolute/build/amap-sdk] [--experimental-ota R3|TNV1 --firmware /absolute/TNV1.zip (TNV1 only; HIGH RISK)]');return;}
   const o={bundle:'com.rayneo.venus.pub'};const args=process.argv.slice(2);
   if(args.length%2)throw Error('expected_named_arguments');
-  const seen=new Set();for(let i=0;i<args.length;i+=2){const k=args[i].slice(2);if(!args[i].startsWith('--')||!['app','addon','profile','identity','device','out','bundle','product','amap-sdk-root','experimental-ota'].includes(k)||seen.has(k))throw Error('unknown_or_duplicate_argument');seen.add(k);o[k]=args[i+1];}
+  const seen=new Set();for(let i=0;i<args.length;i+=2){const k=args[i].slice(2);if(!args[i].startsWith('--')||!['app','addon','profile','identity','device','out','bundle','product','amap-sdk-root','experimental-ota','firmware'].includes(k)||seen.has(k))throw Error('unknown_or_duplicate_argument');seen.add(k);o[k]=args[i+1];}
   validateOptions(o);
   const mapResources=o['amap-sdk-root']?amapResources(o['amap-sdk-root']):[];
   const symbols=run('/usr/bin/nm',['-g',o.addon],{encoding:'utf8',maxBuffer:64*1024*1024});
@@ -38,6 +46,8 @@ function main(){
   const source=fs.realpathSync(o.app),destination=path.resolve(o.out);
   const researchAddon=symbols.includes('_TIOOTAFlashBuild');
   if(researchAddon!==Boolean(o['experimental-ota']))throw Error('research_addon_and_explicit_option_must_match');
+  const firmware=o.firmware?fs.readFileSync(o.firmware):undefined;
+  validateResearchPair(symbols,o['experimental-ota'],firmware);
   let otaPatch;
   if(o['experimental-ota']){
     const info=JSON.parse(run('plutil',['-convert','json','-o','-',path.join(source,'Info.plist')],{encoding:'utf8'}));
@@ -56,8 +66,9 @@ print(json.dumps({'entitlements':p['Entitlements'],'expires':p['ExpirationDate']
   if(otaPatch){
     fs.writeFileSync(path.join(app,'Frameworks/App.framework/App'),otaPatch.output);
     const plist=path.join(app,'Info.plist');
-    run('plutil',['-insert','TIOExperimentalOTAQueryRouting','-string','ios105-r3-loopback-flash-gated',plist]);
-    run('plutil',['-insert','TIOExperimentalOTABuild','-string','R3-SOURCE-RESEARCH-01',plist]);
+    run('plutil',['-insert','TIOExperimentalOTAQueryRouting','-string',o['experimental-ota']==='TNV1'?'ios105-tnv1-loopback-flash-gated':'ios105-r3-loopback-flash-gated',plist]);
+    run('plutil',['-insert','TIOExperimentalOTABuild','-string',o['experimental-ota']==='TNV1'?'TNV1-SOURCE-01':'R3-SOURCE-RESEARCH-01',plist]);
+    if(firmware)fs.writeFileSync(path.join(app,'TurboNavigationCandidate.zip'),firmware,{flag:'wx'});
     const info=JSON.parse(run('plutil',['-convert','json','-o','-',plist],{encoding:'utf8'}));
     if(!info.NSAppTransportSecurity)run('plutil',['-insert','NSAppTransportSecurity','-dictionary',plist]);
     if(info.NSAppTransportSecurity?.NSAllowsLocalNetworking===undefined)run('plutil',['-insert','NSAppTransportSecurity.NSAllowsLocalNetworking','-bool','YES',plist]);
