@@ -18,6 +18,9 @@
 #import "PrivateBootstrap.h"
 #import "ResearchCatalog.h"
 #import "ResearchUI.h"
+#if TIO_NATIVE_NAV
+#import "DisplayPhoneUI.h"
+#endif
 #if TIO_OTA_RESEARCH_ENABLED
 #import "ExperimentalOTAUI.h"
 #import "ExperimentalOTAFeed.h"
@@ -336,6 +339,9 @@ static void AlwaysOnHook(id self,SEL cmd,id value) {
     if([r[@"key"] isEqual:@"knowledge"]){TIOOpenKnowledge(self);return;}
     if([r[@"key"] isEqual:@"navigation"]){[self.navigationController pushViewController:TIONavigationController() animated:YES];return;}
 #if TIO_OTA_RESEARCH_ENABLED
+    #if TIO_NATIVE_NAV
+    if([r[@"key"] isEqual:@"displayPhone"]){[self.navigationController pushViewController:TDPPhoneController() animated:YES];return;}
+    #endif
     if([r[@"key"] isEqual:@"experimentalOTA"]){[self.navigationController pushViewController:TIOExperimentalOTAController() animated:YES];return;}
 #endif
     if([@[@"thinking",@"search",@"exit",@"capture"] containsObject:r[@"key"]])return;

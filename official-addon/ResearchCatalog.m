@@ -13,7 +13,11 @@ NSArray<NSDictionary *> *TIOResearchSections(NSString *page){
         @{@"title":@"全天智记",@"rows":@[Row(@"lifelogText",@"已保存文字",@"doc.text",-1,2),Row(@"lifelogAudio",@"音频保存与分享",@"waveform.circle",-1,3),Row(@"capture",@"保存之后的最终文字",@"square.and.arrow.down",1,0),Row(@"archive",@"导出文字归档",@"square.and.arrow.up",1,1)]}];
     if([page isEqual:@"diagnostics"])return @[
 #if TIO_OTA_RESEARCH_ENABLED
+#if TIO_NATIVE_NAV
+        @{@"title":@"TNV1 研究固件 · 有变砖风险",@"rows":@[Row(@"experimentalOTA",@"TNV1 导航固件 · 默认锁定",@"exclamationmark.shield",-4,0),Row(@"displayPhone",@"Turbo Display · 传图测试",@"rectangle.connected.to.line.below",-4,1)]},
+#else
         @{@"title":@"高风险固件实验 · 非日常使用",@"rows":@[Row(@"experimentalOTA",@"R3 试验用品 · 先阅读风险",@"exclamationmark.shield",-4,0)]},
+#endif
 #endif
         @{@"title":@"运行状态",@"rows":@[Row(@"status",@"适配与回调",@"checkmark.shield",2,0)]},
         @{@"title":@"手动测试",@"rows":@[Row(@"apiTest",@"测试模型接口",@"bubble.left.and.bubble.right",0,2),Row(@"searchTest",@"测试联网搜索",@"globe",0,9),Row(@"todoTest",@"待办协议验收",@"checklist",0,10)]}];
