@@ -1,7 +1,7 @@
-"""Hash-pinned offline TDP1/TNV1/ANIM60 candidate builder; never contacts devices.
+"""Hash-pinned offline TDP1/TNV1/ANIM60/TMU1 builder; no device access.
 
-Generated candidates require separate byte audits and physical validation. A
-successful build alone is not authorization to flash.
+Generated candidates require byte audits and physical validation. Building does
+not authorize flashing. Embedded portrait publication is owner-authorized.
 """
 import argparse, hashlib, json, os, shutil, struct, subprocess, zipfile
 from pathlib import Path
@@ -49,7 +49,8 @@ def branch(site,target,link=False):
     return struct.pack('<HH',0xf000|(s<<10)|((bits>>12)&0x3ff),
       (0xd000 if link else 0x9000)|(j1<<13)|(j2<<11)|((bits>>1)&0x7ff))
 
-def build(out,wide=False,native_eight=False,display_runtime=False,navigation_runtime=False,animation_runtime=False):
+def build(out,wide=False,native_eight=False,display_runtime=False,navigation_runtime=False,animation_runtime=False,music_runtime=False):
+    assert not music_runtime or animation_runtime, 'Music preserves all previous runtime features'
     assert not animation_runtime or navigation_runtime, 'Animation experiment preserves TDP1 and TNV1'
     assert not navigation_runtime or display_runtime, 'Navigation must retain TDP1'
     assert not display_runtime or (wide and native_eight), 'TDP requires N8W menu geometry'
@@ -183,13 +184,16 @@ m8_hook_{name}:
     if wide:flags+=['-DTIO_IMAGE_RX_WIDE=1']
     if display_runtime:flags+=['-DTIO_DISPLAY_RUNTIME=1','-DTDP_FREESTANDING']
     if animation_runtime:flags+=['-DTIO_ANIMATION_EXPERIMENT=1']
+    if music_runtime:flags+=['-DTIO_MUSIC_RUNTIME=1']
     objects=[]
     glue='navigation-runtime-v1/menu9' if navigation_runtime else 'menu8-native-carousel' if native_eight else 'menu8-stream-hooks'
+    if music_runtime:glue='music-runtime-v1/menu10'
     units=([] if native_eight else ['menu8-sidecar'])+['menu8-renderer','menu8-native-lvgl','menu8-owner-layout',glue,'image-upload-test/image_test','image-upload-test/native_file_bridge','image-upload-test/render_idle','image-upload-test/native_page']
     if display_runtime:
         units=['menu8-renderer','menu8-native-lvgl',glue,'image-upload-test/render_idle']+[
             'display-runtime-v1/'+s for s in ['display_runtime','display_carrier','native_display_file','native_display_page']]
         if navigation_runtime:units+=['navigation-runtime-v1/'+s for s in ['nav_runtime','nav_visual','nav_view','nav_lvgl','nav_service']]
+        if music_runtime:units+=['music-runtime-v1/music','music-runtime-v1/music_service']
     animation_units=[]
     if animation_runtime:
         asset=SRC/'animation-runtime-v1/assets/encoded-v1/anime-idle-192x176-l8.bin'
@@ -255,7 +259,7 @@ m8_hook_{name}:
         audit.append(dict(name=name,bytes=len(b),sha256=digest(b),unchanged=b==originals[name]))
     assert sum(r['unchanged'] for r in audit)==13
     put(payload/'OtaFileInfo.json',json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
-    archive=out/('StrixOS-1.0.4.12-'+('TurboAnimation-ANIM60' if animation_runtime else 'TurboNavigation-TNV1' if navigation_runtime else 'TurboDisplay-TDP1' if display_runtime else 'TurboImageRX-'+('N8W' if native_eight and wide else 'N8' if native_eight else 'R4W' if wide else 'R4'))+'-CANDIDATE-NOT-APPROVED.zip')
+    archive=out/('StrixOS-1.0.4.12-'+('TurboMusic-TMU1' if music_runtime else 'TurboAnimation-ANIM60' if animation_runtime else 'TurboNavigation-TNV1' if navigation_runtime else 'TurboDisplay-TDP1' if display_runtime else 'TurboImageRX-'+('N8W' if native_eight and wide else 'N8' if native_eight else 'R4W' if wide else 'R4'))+'-CANDIDATE-NOT-APPROVED.zip')
     with zipfile.ZipFile(archive,'x',compression=zipfile.ZIP_DEFLATED) as z:
         for name in ['OtaFileInfo.json']+list(originals):z.write(payload/name,name)
     archive.chmod(0o600)
@@ -315,12 +319,19 @@ m8_hook_{name}:
           'menu':'Turbo Display starts benchmark; valid TDP upload stops benchmark; TNV1 retained'}
         report['sourceInputs'] += [{'path':str(p.relative_to(ROOT)),'sha256':digest(p.read_bytes())}
           for p in [SRC/'animation-runtime-v1/animation.h',asset]]
-        report['readyBlockers']=['Fresh local byte audit and device preflight required',
-          'Phone OTA path must pin the exact tested ANIM60 ZIP; never substitute an arbitrary rebuild',
+        report['readyBlockers']=['Animation native lifecycle and patched-ARM regression review pending',
+          'Private phone OTA gate not pinned to ANIM60; do not bypass it',
           'Explicit flash authorization required']
         report['unresolved']=['60FPS is a scheduling target, not measured physical panel refresh',
           'Source has only 12 poses; character motion needs separate quality acceptance',
           'Native render-idle and long-term thermal/power behavior need device validation']
+    if music_runtime:
+        report['kind']='TMU1-offline-experimental-candidate'
+        report['menuProfile']='native-ten-TDP1-TNV1-TMU1'
+        report['musicProfile']={'protocol':'TMU1','file':'turbo-music.tmu','packetMax':4096,'menuIndex':9,'cover':[144,144],'lyricsBytes':24576,'linesMax':192,'canvasFPS':30,'idleModes':[0,30,60],'replyCommand':'turbo_music_v1'}
+        report['sourceInputs'] += [{'path':str(p.relative_to(ROOT)),'sha256':digest(p.read_bytes())} for p in sorted((SRC/'music-runtime-v1').glob('*.h'))]
+        report['readyBlockers']=['Music/menu ARM and host tests pending','Matching phone package pending','Fresh flash authorization required']
+        report['unresolved']=['New music page and native audio/controls not device validated','Background relaunch and transfer throughput require physical tests']
     put(out/'report.json',json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({k:report[k] for k in ['candidateAP','candidateAPBytes','moduleVA','moduleBytes','unchangedPayloads','archive','unresolved']}))
     return report

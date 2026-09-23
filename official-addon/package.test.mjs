@@ -21,3 +21,12 @@ test('TNV1 packaging cannot cross-wire old firmware or addon',()=>{
   validateResearchPair('',undefined);
   validateResearchPair('','R3');
 });
+
+test('TMU1 needs music and navigation symbols and exact new ZIP',()=>{
+  const n={...o,bundle:'com.rayneo.venus.pub','experimental-ota':'TMU1',firmware:'/example/TMU1.zip'};
+  validateOptions(n);
+  assert.throws(()=>validateOptions({...n,firmware:undefined}));
+  for(const symbols of ['', '_TNVStart', '_TMMusicConsume'])assert.throws(()=>validateResearchPair(symbols,'TMU1',Buffer.alloc(0)));
+  assert.throws(()=>validateResearchPair('_TNVStart _TMMusicConsume','TNV1',Buffer.alloc(0)));
+  assert.throws(()=>validateResearchPair('_TNVStart _TMMusicConsume','TMU1',Buffer.alloc(9468398)));
+});

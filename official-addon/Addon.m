@@ -15,6 +15,9 @@
 #import "TodoRuntime.h"
 #import "TodoProtocol.h"
 #import "NewsReader.h"
+#if TIO_MUSIC
+#import "music/MusicPlayer.h"
+#endif
 #import "PrivateBootstrap.h"
 #import "ResearchCatalog.h"
 #import "ResearchUI.h"
@@ -245,7 +248,11 @@ static void AsrHook(id self,SEL cmd,id text,BOOL final,id sid) {
     if(NSThread.isMainThread)work();else dispatch_async(dispatch_get_main_queue(),work);
 }
 static void AudioStartHook(id self,SEL cmd) {
-    void (^work)(void)=^{Controller.voiceExited=NO;[Controller.taskGate beginTurn];OriginalAudioStart(self,cmd);};
+    void (^work)(void)=^{
+#if TIO_MUSIC
+        TMMusicPauseForVoice();
+#endif
+        Controller.voiceExited=NO;[Controller.taskGate beginTurn];OriginalAudioStart(self,cmd);};
     if(NSThread.isMainThread)work();else dispatch_async(dispatch_get_main_queue(),work);
 }
 static void NlpHook(id self,SEL cmd,id value) {
@@ -405,6 +412,9 @@ static void AlwaysOnHook(id self,SEL cmd,id value) {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)ip {
     NSDictionary *r=self.sections[ip.section][@"rows"][ip.row];[tableView deselectRowAtIndexPath:ip animated:YES];
     if([r[@"key"] isEqual:@"agent"])return;
+#if TIO_MUSIC
+    if([r[@"key"] isEqual:@"music"]){[self.navigationController pushViewController:TMMusicController() animated:YES];return;}
+#endif
     if([r[@"key"] isEqual:@"knowledge"]){TIOOpenKnowledge(self);return;}
     if([r[@"key"] isEqual:@"ttsEngine"]){[self configureTTSEngine];return;}
     if([r[@"key"] isEqual:@"ttsKey"]){[self configureTTS];return;}

@@ -3,6 +3,9 @@
 #include "nav_lvgl.h"
 #include "menu9.h"
 #include <string.h>
+#if TIO_MUSIC_RUNTIME
+#include "../music-runtime-v1/music_service.h"
+#endif
 #define TN_MESSAGE_ID 0x544e5631u
 typedef struct {
  TNRuntime runtime;TNView *view;TNNativePower power;
@@ -33,7 +36,11 @@ static bool safe_home(void){
  void *m=nav_monitors(),*i=m?nav_input(m):NULL;return i&&!nav_folded(i)&&nav_business_idle();
 }
 static bool owns(Control *c){return !c->retired&&c->slot&&c->app&&ptr(manager(),0x10)==c->app&&word(manager(),0x1c)==1&&same(nav_top_app(),"com.rayneo.liteos.launcher");}
-static bool available(void *ctx){Control *c=ctx;return !c->retired&&paired()&&safe_home()&&c->slot&&!((M8NativeTail *)((uint8_t *)c->app+0xdc))->page&&(!c->view||c->view->open);}
+static bool available(void *ctx){Control *c=ctx;
+#if TIO_MUSIC_RUNTIME
+ if(c->slot&&tm_slot_visible(c->slot->music))return false;
+#endif
+ return !c->retired&&paired()&&safe_home()&&c->slot&&!((M8NativeTail *)((uint8_t *)c->app+0xdc))->page&&(!c->view||c->view->open);}
 static void deleted(void *e){Control *c=stream_event_user(e);if(!c||!c->view)return;
  c->view->root=c->view->icon=c->view->map=NULL;c->view->open=false;c->view->retiring=true;
  (void)tn_native_power(&c->power,TN_POWER_RELEASE,false);c->waiting=false;c->runtime.active=false;c->runtime.last_sid=c->runtime.sid;
@@ -110,6 +117,9 @@ void tn_message_dispatch(const TIONativeMessage *m){
  TNUI u=api(c);c->reply=tn_receive(&c->runtime,&u,m->data,m->bytes,stream_tick(),true);c->pending=true;flush(c);
 }
 void m8_hook_vm_event(void *event){
+#if TIO_MUSIC_RUNTIME
+ if(tm_handle_event(event))return;
+#endif
  void *vm=stream_event_user(event),*app=ptr(vm,0x10);TNNavSlot *s=slot_of(app);Control *c=s?s->control:NULL;
  if(c&&c->view&&owns(c)&&native_event_code(event)==0xe){
   unsigned key=native_event_key(event);

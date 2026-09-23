@@ -8,14 +8,17 @@ ORIGINAL='53afdf5298815849eafca6f315a70606d2a605aff2e563f79050f797d615a988'
 def sha(b):return hashlib.sha256(b).hexdigest()
 def audit(folder):
  folder=Path(folder);report=json.loads((folder/'report.json').read_text())
- assert report['kind'] in ('image-rx-r4-experimental-ota','ANIM60-offline-experimental-candidate')
- animation=report['kind']=='ANIM60-offline-experimental-candidate'
+ assert report['kind'] in ('image-rx-r4-experimental-ota','ANIM60-offline-experimental-candidate','TMU1-offline-experimental-candidate')
+ music=report['kind']=='TMU1-offline-experimental-candidate'
+ animation=report['kind']=='ANIM60-offline-experimental-candidate' or music
  if animation:
   profile=report['animationProfile']
   assert (profile['width'],profile['height'],profile['sourceFrames'],profile['targetCanvasFPS'])==(192,176,12,60)
  native_eight=report.get('menuProfile')=='native-eight-v1'
  native_nine=report.get('menuProfile')=='native-nine-TDP1-and-TNV1'
- native_carousel=native_eight or native_nine
+ native_ten=report.get('menuProfile')=='native-ten-TDP1-TNV1-TMU1'
+ assert native_ten==music
+ native_carousel=native_eight or native_nine or native_ten
  baseline=ROOT/'firmware-inspection/StrixOS-1.0.4.12'
  old=(baseline/'nuttx_ap.bin').read_bytes();assert sha(old)==ORIGINAL
  new=(folder/'payload/nuttx_ap.bin').read_bytes();assert sha(new)==report['candidateAP']
@@ -37,6 +40,14 @@ def audit(folder):
   assert menu['apSHA256']==sha(new) and len(menu['scenarios'])==31 and menu['realWheelMath']
   assert all(s['passed'] and s['nativeWheelIndex8'] and s['ninthMenuDistinct'] and s['originalArrayPointersPreserved'] and s['tailCanary'] for s in menu['scenarios'])
   assert service['passed'] and service['AP']==sha(new) and service['noHeapLeaks']
+ if native_ten:
+  menu=json.loads((folder/'menu10-native-arm.json').read_text())
+  assert menu['apSHA256']==sha(new) and len(menu['scenarios'])==44 and menu['realWheelMath']
+  assert all(s['passed'] and s['nativeWheelIndex9'] and s['tenthMenuDistinct'] and s['originalArrayPointersPreserved'] and s['tailCanary'] and s['destroyNoDoubleFree'] for s in menu['scenarios'])
+  service=json.loads((folder/'navigation-service-arm.json').read_text())
+  assert service['passed'] and service['AP']==sha(new) and service['noHeapLeaks']
+  service=json.loads((folder/'music-service-arm.json').read_text())
+  assert service['AP']==sha(new) and all(service[k] for k in ['passed','noHeapLeaks','fiveLyricRows','currentAlwaysMiddle','seekAndEdgePadding','menuResumeUplink','coverAndLyrics','fixedScreenDeadline','physicalExitDoesNotReopen','busyDMADeferred','duplicateOpenDoesNotWake','controls'])
  assert len(new)<=0x9f0000 and new[:16]==old[:16] and new[-8:]==old[-8:]
  assert report['moduleOffset']=='0x9072c0' and report['moduleVA']=='0x10a972c0'
  module_at=int(report['moduleOffset'],16)
@@ -63,7 +74,7 @@ def audit(folder):
   allowed.update(range(at-BASE,at-BASE+n));patches.append({'address':hex(at),'bytes':n,'target':target})
  wrappers=[('show',0x1079a784,4),('hide',0x1079a7b8,4),('destroy',0x10799660,4),('wheel',0x1079a310,6),('event',0x1079a890,4),('message',0x106eba90,4)]
  if native_carousel:wrappers += [('names',0x10799dec,4),('dots',0x107998b8,4),('delete_dots',0x10799896,4),('lottie',0x10799c58,4),('app_id',0x10799838,4),('refresh_label',0x10799c1a,4)]
- if native_nine:wrappers += [('vm_event',0x107a1dd0,4)]
+ if native_nine or native_ten:wrappers += [('vm_event',0x107a1dd0,4)]
  for name,at,n in wrappers:
   branch(at,'m8_hook_'+name,n,'b.w')
   trampoline=(syms['stock_'+name]&~1)-BASE
@@ -74,9 +85,10 @@ def audit(folder):
   for name,at in [('frame_start',0x1079911a),('frame_index',0x10799130),('label_frame',0x1079a01c),('label_index',0x1079a484),('indicator',0x10799a44),('frame',0x10799d38)]:
    branch(at,'m8_hook_'+name,4,'b.w')
   bounds=[(0x1079a2b8,'f1ee087a','f1ee0c7a'),(0x107992f0,'efeece40','efeeee40'),(0x10799328,'efeece40','efeeee40'),(0x10799d90,'d129','ef29'),(0x10799d94,'d121','ef21')]
-  if native_nine:
+  if native_nine or native_ten:
    branch(0x10799d6e,'m8_hook_render_slide',4,'b.w')
    bounds=[(0x1079a2b8,'f1ee087a','f2ee007a'),(0x107992f0,'efeece40',struct.pack('<f',8.4666667).hex()),(0x10799328,'efeece40',struct.pack('<f',8.4666667).hex())]
+   if native_ten:bounds=[(0x1079a2b8,'f1ee087a','f2ee027a'),(0x107992f0,'efeece40',struct.pack('<f',9.4666667).hex()),(0x10799328,'efeece40',struct.pack('<f',9.4666667).hex())]
   for at,before,after in bounds:
    before,after=bytes.fromhex(before),bytes.fromhex(after)
    assert old[at-BASE:at-BASE+len(before)]==before and new[at-BASE:at-BASE+len(after)]==after
