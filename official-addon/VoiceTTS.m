@@ -1,4 +1,7 @@
 #import "VoiceTTS.h"
+#if TIO_MUSIC
+#import "music/MusicPlayer.h"
+#endif
 #import <AVFAudio/AVFAudio.h>
 
 @interface TIOVoiceTTS () <AVSpeechSynthesizerDelegate>
@@ -50,7 +53,11 @@
     self.segments=0;self.totalCharacters=0;self.scheduled=0;
     self.ready=NO;self.finalRequested=NO;self.finishSent=NO;self.networkFinished=NO;self.state=@"待命";
 }
-- (void)beginTurn {[self cancel];}
+- (void)beginTurn {
+#if TIO_MUSIC
+ TMMusicPauseForVoice();
+#endif
+ [self cancel];}
 + (NSString *)audioRoute {
     for(AVAudioSessionPortDescription *out in AVAudioSession.sharedInstance.currentRoute.outputs)
         if([out.portType isEqual:AVAudioSessionPortBluetoothA2DP]||[out.portType isEqual:AVAudioSessionPortBluetoothHFP])return @"蓝牙眼镜/耳机";

@@ -1,7 +1,11 @@
 #ifndef TURBO_NAV_SERVICE_H
 #define TURBO_NAV_SERVICE_H
 #include "../image-upload-test/native_file_bridge.h"
-typedef struct {void *row,*label,*icon,*dot,*app,*control;} TNNavSlot;
+typedef struct {void *row,*label,*icon,*dot,*app,*control;
+#if TIO_MUSIC_RUNTIME
+ void *music;
+#endif
+} TNNavSlot;
 TNNavSlot *tn_slot_create(void *app);
 void tn_slot_destroy(TNNavSlot *),tn_slot_hidden(TNNavSlot *);
 bool tn_slot_visible(TNNavSlot *),tn_slot_open(TNNavSlot *);
