@@ -15,6 +15,7 @@ if a.candidate:
 else:
  elf=d/'display-native-LINK-ONLY.elf';report=json.loads((d/'link-receipt.json').read_text());assert hashlib.sha256(elf.read_bytes()).hexdigest()==report['elfSha256']
  blob=d/'emulator-module-NOT-FIRMWARE.bin'
+animation=bool(report.get('animationProfile'));animation_frames=0
 if not blob.exists():subprocess.run(['llvm-objcopy','-O','binary',str(elf),str(blob)],check=True)
 symbols={}
 for row in subprocess.check_output(['llvm-nm','--defined-only','--format=posix',str(elf)],text=True).splitlines():
@@ -49,18 +50,19 @@ mocks.pop(symbols['stream_register_shim']&~1,None)
 mocks[symbols['stock_message']&~1]='stock_message'
 mocks[symbols['tdp_rnlink_send']&~1]='send';mocks[symbols['memcpy']&~1]='memcpy';mocks[symbols['memset']&~1]='memset';mocks[symbols['memcmp']&~1]='memcmp'
 def hook(_u,addr,size,data):
- global now,timer,freed,bound,last_reply,replies,next_object,queued,forwarded
+ global now,timer,freed,bound,last_reply,replies,next_object,queued,forwarded,animation_frames
  if addr==STOP:u.emu_stop();return
  name=mocks.get(addr)
  if not name:return
  if name=='memcpy':u.mem_write(r(0),bytes(u.mem_read(r(1),r(2))));ret(r(0))
  elif name=='memset':u.mem_write(r(0),bytes([r(1)&255])*r(2));ret(r(0))
  elif name=='memcmp':ret(0 if u.mem_read(r(0),r(2))==u.mem_read(r(1),r(2)) else 1)
- elif name=='stream_memalign':assert r(0)==64 and r(1)<=131264;ret(PAGE)
+ elif name=='stream_memalign':assert r(0)==64 and r(1)<=(132000 if animation else 131264);ret(PAGE)
  elif name=='stream_free':assert r(0)==PAGE and not word(0x18001000+24) and not bound;freed+=1;ret()
  elif name=='stream_tick':ret(now)
  elif name=='stream_timer_create':assert not timer;timer=True;put(TIMER+8,r(0));put(TIMER+12,r(2));ret(TIMER)
  elif name=='stream_timer_next':ret(TIMER if timer and not r(0) else 0)
+ elif name=='stream_timer_period':assert animation and timer and r(0)==TIMER and r(1)==100;ret()
  elif name=='stream_timer_delete':assert timer and r(0)==TIMER;timer=False;ret()
  elif name=='stream_display_next':ret(0 if r(0) else 0x18002000)
  elif name=='stream_stride':assert r(1)==6;ret(r(0))
@@ -75,13 +77,17 @@ def hook(_u,addr,size,data):
   assert 32<=n<=512 and message[20:24]==bytes(4)
   u.mem_write(QUEUED_DATA,bytes(u.mem_read(at,n)));struct.pack_into('<I',message,4,QUEUED_DATA);u.mem_write(QUEUE,bytes(message));queued+=1;ret()
  elif name=='stock_message':forwarded+=1;ret()
- elif name=='stream_canvas_set_buffer':assert r(0) in objects and r(2)==512 and r(3)==128;bound=r(1);ret()
+ elif name=='stream_canvas_set_buffer':
+  assert r(0) in objects
+  assert (r(2),r(3))==(512,128) or (animation and (r(2),r(3))==(192,176))
+  if r(2)==192:animation_frames+=1
+  bound=r(1);ret()
  elif name=='tio_lv_obj_delete':
   root_object=r(0);children={root_object}|{k for k,v in objects.items() if v.get('parent')==root_object}
   for key in children:del objects[key]
   bound=0;ret()
  elif name=='send':assert r(0)==15 and r(3)==0;last_reply=parse_reply(bytes(u.mem_read(r(1),r(2))));replies+=1;ret(0)
- elif name=='native_label_text':assert 'SID' in cstring(r(1));ret()
+ elif name=='native_label_text':assert 'SID' in cstring(r(1)) or (animation and cstring(r(1)).startswith('ANIM60'));ret()
  elif name in ('native_report_activity','native_log','stream_invalidate','native_text_color','native_align') or name.startswith('tio_lv_obj_'):ret()
  else:raise AssertionError('Unmocked native service '+name)
 u.hook_add(UC_HOOK_CODE,hook)
@@ -96,6 +102,13 @@ file_callback=word(0x19750d2c+0x18);assert file_callback==(symbols['tio_hook_fil
 put(0x19a1f954,0x20021000);put(0x20021000+0x3c,0x20022000);put(0x20022000+0x10,APP)
 assert call('tdp_native_open',PARENT,7392,OWNER)==PAGE and word(OWNER)==PAGE
 assert last_reply==dict(result=0,sid=7392,request=0,revision=0)
+if animation:
+ assert animation_frames==1
+ for _ in range(200):now+=5;call(word(TIMER+8),TIMER)
+ assert animation_frames==61,'Expected 60 new submissions in emulated second'
+ # The image is resident in the AP, not filled by a phone upload.
+ assert bytes(u.mem_read(bound,192*170))==bytes(u.mem_read(symbols['ta_asset']+8*192*176,192*170))
+held=bytes(u.mem_read(bound,16))
 request=0
 def raw_packet(raw):
  assert len(raw)<=512;u.mem_write(WIRE,raw)
@@ -114,7 +127,7 @@ assert packet(1)==0
 frame=bytes([153])*65536
 assert packet(5,struct.pack('<III',1,65536,zlib.crc32(frame)))==9
 for at in range(0,len(frame),472):assert packet(6,struct.pack('<II',1,at)+frame[at:at+472])==9
-assert bytes(u.mem_read(bound,16))==bytes(16)
+assert bytes(u.mem_read(bound,16))==held
 assert packet(7,struct.pack('<I',1))==1
 assert bytes(u.mem_read(bound,len(frame)))==frame and last_reply['revision']==1
 put(0x18001000+24,1);call('tdp_native_retire',PAGE);assert not word(OWNER)
@@ -130,6 +143,7 @@ result={'scope':'NEW linked ARM protocol/page; native LVGL/OS/RNLink MOCKS','dev
         'registeredFileCallback':True,'deepCopyThenLauncherDispatch':True,'foreignMessageForwarded':True,'noPageReply':True,
         'SID':7392,'replyCount':replies,'fullFrameBytes':len(frame),'chunkBytesMax':472,
         'frameMatched':True,'busyRetirementDeferred':True,'freedOnce':True}
+if animation:result.update(animationTargetFPS=60,animationSubmissionsInEmulatedSecond=60,embeddedAssetReadback=True,physicalFPSMeasured=False)
 if a.phone_trace:
  trace=json.loads(a.phone_trace.read_text());assert trace['syntheticOnly'] and trace['sid']==7392
  assert len(trace['packets'])==145

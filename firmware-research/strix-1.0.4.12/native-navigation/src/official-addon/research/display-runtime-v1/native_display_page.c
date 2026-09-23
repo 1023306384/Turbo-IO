@@ -6,6 +6,12 @@
 #include "display_memory.h"
 #include "../menu8-renderer.h"
 #include "../image-upload-test/render_idle.h"
+#ifdef TIO_ANIMATION_EXPERIMENT
+#include "../animation-runtime-v1/animation.h"
+extern const uint8_t ta_asset[TA_BYTES*TA_FRAMES];
+extern void native_log(unsigned,unsigned,unsigned,unsigned,const char *,...);
+extern void stream_timer_period(void *,uint32_t);
+#endif
 struct TDPNativePage {
  TDPRuntime runtime;
  void *parent,*root,*canvas,*label,*timer;
@@ -13,6 +19,10 @@ struct TDPNativePage {
  uint32_t last_activity,last_reply;
  bool retired,sent_reply,closing_notified,reply_pending;
  TDPReply pending_reply;
+#ifdef TIO_ANIMATION_EXPERIMENT
+ TAPlayer animation;
+ bool animation_mode;
+#endif
 };
 extern const M8RenderAPI m8_native_api;
 extern void *stream_memalign(size_t,size_t);
@@ -57,6 +67,12 @@ static bool submit(void *ctx,const uint8_t *pixels,unsigned w,unsigned h){
   p->root=p->canvas=p->label=NULL;return true;
  }
  if(p->retired||!p->root||!p->canvas||w!=512||h!=128)return false;
+#ifdef TIO_ANIMATION_EXPERIMENT
+ ta_stop(&p->animation);p->animation_mode=false;
+ if(p->timer)stream_timer_period(p->timer,100);
+ tio_lv_obj_set_size(p->canvas,512,128);native_align(p->canvas,5,0,0);
+ tio_lv_obj_set_size(p->label,512,44);native_align(p->label,2,0,0);
+#endif
  stream_canvas_set_buffer(p->canvas,(void *)pixels,w,h,6);stream_invalidate(p->canvas);return true;
 }
 static TDPUI ui(TDPNativePage *p){return (TDPUI){p,idle,submit};}
@@ -65,6 +81,30 @@ static void status(TDPNativePage *p){
  if(!p->label)return;char text[64]="Turbo Display SID ";char *s=text+sizeof("Turbo Display SID ")-1;
  s=number(s,p->runtime.sid);*s++=' ';*s++='#';s=number(s,p->runtime.revision);*s=0;native_label_text(p->label,text);
 }
+#ifdef TIO_ANIMATION_EXPERIMENT
+static bool animation_submit(void *ctx,const uint8_t *pixels,unsigned w,unsigned h){
+ TDPNativePage *p=ctx;
+ if(p->retired||!p->root||!p->canvas||w!=TA_WIDTH||h!=TA_HEIGHT)return false;
+ stream_canvas_set_buffer(p->canvas,(void *)pixels,w,h,6);stream_invalidate(p->canvas);return true;
+}
+static void animation_status(TDPNativePage *p){
+ if(!p->label)return;
+ char text[120];
+ memcpy(text,"ANIM60 192x176\n60 target / poses 8\nsent ",sizeof("ANIM60 192x176\n60 target / poses 8\nsent ")-1);
+ char *s=text+sizeof("ANIM60 192x176\n60 target / poses 8\nsent ")-1;
+ s=number(s,p->animation.submitted);*s++=' ';*s++='/';*s++=' ';
+ s=number(s,p->animation.skipped);*s++='\n';*s++='g';*s++='a';*s++='p';*s++=' ';
+ s=number(s,p->animation.max_gap);*s++='m';*s++='s';*s++='\n';
+ const char *state=p->animation.stalled?"STALL STOP":p->animation.failed?"ERROR STOP":p->animation.running?"RUN 30s":"DONE";
+ while(*state)*s++=*state++;*s=0;native_label_text(p->label,text);
+}
+static void animation_step(TDPNativePage *p,uint32_t now){
+ TAUI a={p,idle,animation_submit};
+ bool was_running=p->animation.running;
+ (void)ta_step(&p->animation,&a,now);p->runtime.active=(uint8_t)p->animation.active;
+ if(was_running&&!p->animation.running)stream_timer_period(p->timer,100);
+}
+#endif
 static void emit(TDPReply result){
  result.max_rect_bytes=TDP_NATIVE_PIXELS_MAX;
  uint8_t bytes[TDP_UPLINK_MAX];size_t n=tdp_carrier_reply(&result,bytes,sizeof bytes);
@@ -105,7 +145,19 @@ static void tick(void *timer){
  }
  flush_reply(p);
  (void)tdp_tick(&p->runtime,&callbacks,now);
- if((uint32_t)(now-p->last_activity)>=1000u){p->last_activity=now;native_report_activity();}
+#ifdef TIO_ANIMATION_EXPERIMENT
+ if(p->animation_mode)animation_step(p,now);
+#endif
+ if((uint32_t)(now-p->last_activity)>=1000u){p->last_activity=now;native_report_activity();
+#ifdef TIO_ANIMATION_EXPERIMENT
+  if(p->animation_mode){
+   animation_status(p);
+   native_log(1,0,0,0,"[TurboAnim60] elapsed=%u sent=%u skip=%u busy=%u gap=%u fail=%u running=%u",
+    now-p->animation.start,p->animation.submitted,p->animation.skipped,p->animation.busy_polls,
+    p->animation.max_gap,p->animation.failed,p->animation.running);
+  }
+#endif
+ }
 }
 TDPNativePage *tdp_native_open(void *parent,uint32_t sid,TDPNativePage **owner){
  if(!parent||!sid||!owner||*owner)return NULL;
@@ -121,7 +173,13 @@ TDPNativePage *tdp_native_open(void *parent,uint32_t sid,TDPNativePage **owner){
  if(!idle(NULL)||stream_stride(512,6)!=512||tio_lv_obj_get_width(parent)<540||tio_lv_obj_get_height(parent)<180)return NULL;
  TDPNativePage *p=stream_memalign(64,sizeof *p);if(!p)return NULL;memset(p,0,sizeof *p);p->parent=parent;p->owner=owner;
  if(!tdp_open(&p->runtime,sid,stream_tick())){stream_free(p);return NULL;}
- p->timer=stream_timer_create(tick,100,p);if(!p->timer){stream_free(p);return NULL;}
+#ifdef TIO_ANIMATION_EXPERIMENT
+ if(stream_stride(TA_WIDTH,6)!=TA_WIDTH){stream_free(p);return NULL;}
+ p->timer=stream_timer_create(tick,5,p);
+#else
+ p->timer=stream_timer_create(tick,100,p);
+#endif
+ if(!p->timer){stream_free(p);return NULL;}
  p->root=m8_native_api.create_root(parent);
  if(p->root){
   m8_native_api.hidden(p->root,true);
@@ -133,7 +191,16 @@ TDPNativePage *tdp_native_open(void *parent,uint32_t sid,TDPNativePage **owner){
   tio_lv_obj_set_size(p->canvas,512,128);native_align(p->canvas,5,0,0);
   tio_lv_obj_set_size(p->label,512,44);native_align(p->label,2,0,0);native_text_color(p->label,0x00ffffff,0);
   stream_canvas_set_buffer(p->canvas,p->runtime.pixels[0],512,128,6);
-  status(p);*owner=p;m8_native_api.hidden(p->root,false);native_report_activity();
+  status(p);
+#ifdef TIO_ANIMATION_EXPERIMENT
+  if(!ta_start(&p->animation,ta_asset,sizeof ta_asset,p->runtime.pixels[0],p->runtime.pixels[1],
+    TDP_PIXELS,stream_tick(),p->runtime.active))goto fail;
+  p->animation_mode=true;p->runtime.deadline=stream_tick()+60000u;
+  tio_lv_obj_set_size(p->canvas,TA_WIDTH,TA_HEIGHT);native_align(p->canvas,7,8,0);
+  tio_lv_obj_set_size(p->label,300,164);native_align(p->label,8,-8,0);
+  animation_step(p,stream_tick());animation_status(p);
+#endif
+  *owner=p;m8_native_api.hidden(p->root,false);native_report_activity();
   reply(p,(TDPReply){TDP_CAPS,sid,0,0,512,128,472,120000});return p;
  }
 fail:
@@ -157,6 +224,14 @@ TDPResult tdp_native_receive(TDPNativePage *p,const uint8_t *bytes,size_t n){
  flush_reply(p);
  if(p->reply_pending)return TDP_BUSY; /* unsupported pipelining cannot overwrite ACK */
  TDPUI callbacks=ui(p);TDPReply r=tdp_handle(&p->runtime,&callbacks,bytes,n,stream_tick());
+#ifdef TIO_ANIMATION_EXPERIMENT
+ /* Valid uploads take ownership of the SAME staging buffers. QUERY/invalid
+  * packets do not interrupt playback. Never animate during a transaction. */
+ if(r.result==TDP_STAGED||r.result==TDP_UI_SUBMITTED||r.result==TDP_CLOSED){
+  ta_stop(&p->animation);p->animation_mode=false;
+  stream_timer_period(p->timer,100);
+ }
+#endif
  if(r.result==TDP_UI_SUBMITTED)status(p);
  if(r.result==TDP_CLOSED)p->closing_notified=true;
  reply(p,r);return r.result;

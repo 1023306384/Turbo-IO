@@ -1,8 +1,7 @@
-"""Hash-pinned OFFLINE Image RX successor candidate builder. Never flashes or contacts devices.
+"""Hash-pinned offline TDP1/TNV1/ANIM60 candidate builder; never contacts devices.
 
-Output is an untested experimental OTA candidate, not a proven bootable release.
-TNV1 retains the TDP1 test tool and adds native navigation. Generated candidates
-require separate audit; successful compilation is not permission to flash.
+Generated candidates require separate byte audits and physical validation. A
+successful build alone is not authorization to flash.
 """
 import argparse, hashlib, json, os, shutil, struct, subprocess, zipfile
 from pathlib import Path
@@ -50,11 +49,13 @@ def branch(site,target,link=False):
     return struct.pack('<HH',0xf000|(s<<10)|((bits>>12)&0x3ff),
       (0xd000 if link else 0x9000)|(j1<<13)|(j2<<11)|((bits>>1)&0x7ff))
 
-def build(out,wide=False,native_eight=False,display_runtime=False,navigation_runtime=False):
+def build(out,wide=False,native_eight=False,display_runtime=False,navigation_runtime=False,animation_runtime=False):
+    assert not animation_runtime or navigation_runtime, 'Animation experiment preserves TDP1 and TNV1'
     assert not navigation_runtime or display_runtime, 'Navigation must retain TDP1'
     assert not display_runtime or (wide and native_eight), 'TDP requires N8W menu geometry'
     hooks=HOOKS+(native_menu.WRAPPERS if native_eight else [])
     aliases={**ALIASES,**(native_menu.ALIASES if native_eight else {})}
+    if animation_runtime:aliases['stream_timer_period']='lv_timer_set_period'
     if display_runtime: aliases['tdp_rnlink_send']='rnlink_if_send_payload'
     assert not out.exists(),'Output must be new'
     firmware=ROOT/'firmware-inspection/StrixOS-1.0.4.12'
@@ -90,7 +91,7 @@ def build(out,wide=False,native_eight=False,display_runtime=False,navigation_run
             at=locate(p);assert ap[at:at+len(name)+1]==name.encode()+b'\0'
         return next(iter(addresses))
     md=capstone.Cs(capstone.CS_ARCH_ARM,capstone.CS_MODE_THUMB);md.detail=True
-    entries={e['address']&~1 for e in syms['entries']} | set(syms.get('entryPoints',[]))
+    entries={e['address']&~1 for e in syms['entries']} | (set() if animation_runtime else set(syms.get('entryPoints',[])))
     for name,addr,n in hooks:
         instructions=list(md.disasm(ap[addr-BASE:addr-BASE+n],addr))
         assert sum(i.size for i in instructions)==n
@@ -161,7 +162,7 @@ m8_hook_{name}:
       . = 0x{module_va:x};
       __module_start = .;
       .text : {{ *(.text .text.*) }}
-      .rodata ALIGN(4) : {{ *(.rodata .rodata.*) }}
+      .rodata ALIGN({64 if animation_runtime else 4}) : {{ *(.rodata .rodata.*) }}
       .data : {{ *(.data .data.*) }}
       .bss : {{ *(.bss .bss.* COMMON) }}
       __module_end = .;
@@ -181,6 +182,7 @@ m8_hook_{name}:
            '-Wall','-Wextra','-Werror','-I',str(SRC),'-I',str(generated)]
     if wide:flags+=['-DTIO_IMAGE_RX_WIDE=1']
     if display_runtime:flags+=['-DTIO_DISPLAY_RUNTIME=1','-DTDP_FREESTANDING']
+    if animation_runtime:flags+=['-DTIO_ANIMATION_EXPERIMENT=1']
     objects=[]
     glue='navigation-runtime-v1/menu9' if navigation_runtime else 'menu8-native-carousel' if native_eight else 'menu8-stream-hooks'
     units=([] if native_eight else ['menu8-sidecar'])+['menu8-renderer','menu8-native-lvgl','menu8-owner-layout',glue,'image-upload-test/image_test','image-upload-test/native_file_bridge','image-upload-test/render_idle','image-upload-test/native_page']
@@ -188,7 +190,15 @@ m8_hook_{name}:
         units=['menu8-renderer','menu8-native-lvgl',glue,'image-upload-test/render_idle']+[
             'display-runtime-v1/'+s for s in ['display_runtime','display_carrier','native_display_file','native_display_page']]
         if navigation_runtime:units+=['navigation-runtime-v1/'+s for s in ['nav_runtime','nav_visual','nav_view','nav_lvgl','nav_service']]
-    for source in [SRC/(s+'.c') for s in units]+([] if display_runtime else [generated/'photo-payload.c'])+[generated/'trampolines.S']:
+    animation_units=[]
+    if animation_runtime:
+        asset=SRC/'animation-runtime-v1/assets/encoded-v1/anime-idle-192x176-l8.bin'
+        assert asset.stat().st_size==192*176*12
+        assert digest(asset.read_bytes())=='f758dd6e3cdf5fc6550238df26e46111e9d45d098b9d95f649626ea58210ee1d'
+        put(generated/'animation-asset.S','.section .rodata.ta_asset,"a",%progbits\n.balign 64\n.global ta_asset\n.type ta_asset,%object\nta_asset:\n.incbin "'+str(asset)+'"\n.size ta_asset, .-ta_asset\n')
+        units+=['animation-runtime-v1/animation']
+        animation_units=[generated/'animation-asset.S']
+    for source in [SRC/(s+'.c') for s in units]+([] if display_runtime else [generated/'photo-payload.c'])+[generated/'trampolines.S']+animation_units:
         obj=generated/(source.stem+'.o');run([compiler,*flags,'-c',source,'-o',obj]);objects.append(obj)
     elf=generated/'menu8-experiment.elf'
     run([linker,'-T',generated/'link.ld','--entry=m8_hook_ctor',*objects,'-o',elf])
@@ -245,7 +255,7 @@ m8_hook_{name}:
         audit.append(dict(name=name,bytes=len(b),sha256=digest(b),unchanged=b==originals[name]))
     assert sum(r['unchanged'] for r in audit)==13
     put(payload/'OtaFileInfo.json',json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
-    archive=out/('StrixOS-1.0.4.12-'+('TurboNavigation-TNV1' if navigation_runtime else 'TurboDisplay-TDP1' if display_runtime else 'TurboImageRX-'+('N8W' if native_eight and wide else 'N8' if native_eight else 'R4W' if wide else 'R4'))+'-CANDIDATE-NOT-APPROVED.zip')
+    archive=out/('StrixOS-1.0.4.12-'+('TurboAnimation-ANIM60' if animation_runtime else 'TurboNavigation-TNV1' if navigation_runtime else 'TurboDisplay-TDP1' if display_runtime else 'TurboImageRX-'+('N8W' if native_eight and wide else 'N8' if native_eight else 'R4W' if wide else 'R4'))+'-CANDIDATE-NOT-APPROVED.zip')
     with zipfile.ZipFile(archive,'x',compression=zipfile.ZIP_DEFLATED) as z:
         for name in ['OtaFileInfo.json']+list(originals):z.write(payload/name,name)
     archive.chmod(0o600)
@@ -296,6 +306,21 @@ m8_hook_{name}:
         report['readyBlockers']=['Nine-slot and native navigation ARM integration tests pending','Phone TNV1 sender and OTA candidate pinning pending','Independent artifact audit pending','Explicit flash authorization pending']
         report['unresolved']=['New native navigation page and power behavior not device tested','Local mini map is route schematic, not map tiles','Only native launcher idle can auto-open; active stock tasks are not interrupted']
         report['sourceInputs'] += [{'path':str(p.relative_to(ROOT)),'sha256':digest(p.read_bytes())} for p in sorted((SRC/'navigation-runtime-v1').glob('*.h'))]+[{'path':str(SRC/'navigation-runtime-v1/menu9_profile.py'),'sha256':digest((SRC/'navigation-runtime-v1/menu9_profile.py').read_bytes())}]
+    if animation_runtime:
+        report['kind']='ANIM60-offline-experimental-candidate'
+        report['animationProfile']={'width':192,'height':176,'format':'L8','sourceFrames':12,
+          'sourcePoseFPS':8,'targetCanvasFPS':60,'durationMs':30000,'pageTimeoutMs':60000,
+          'benchmark':'60Hz changing bottom marker, NOT 60 unique character poses per second',
+          'additionalPixelHeapBytes':0,'assetBytes':asset.stat().st_size,'assetSHA256':digest(asset.read_bytes()),
+          'menu':'Turbo Display starts benchmark; valid TDP upload stops benchmark; TNV1 retained'}
+        report['sourceInputs'] += [{'path':str(p.relative_to(ROOT)),'sha256':digest(p.read_bytes())}
+          for p in [SRC/'animation-runtime-v1/animation.h',asset]]
+        report['readyBlockers']=['Fresh local byte audit and device preflight required',
+          'Phone OTA path must pin the exact tested ANIM60 ZIP; never substitute an arbitrary rebuild',
+          'Explicit flash authorization required']
+        report['unresolved']=['60FPS is a scheduling target, not measured physical panel refresh',
+          'Source has only 12 poses; character motion needs separate quality acceptance',
+          'Native render-idle and long-term thermal/power behavior need device validation']
     put(out/'report.json',json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({k:report[k] for k in ['candidateAP','candidateAPBytes','moduleVA','moduleBytes','unchangedPayloads','archive','unresolved']}))
     return report

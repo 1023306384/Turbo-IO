@@ -8,7 +8,11 @@ ORIGINAL='53afdf5298815849eafca6f315a70606d2a605aff2e563f79050f797d615a988'
 def sha(b):return hashlib.sha256(b).hexdigest()
 def audit(folder):
  folder=Path(folder);report=json.loads((folder/'report.json').read_text())
- assert report['kind']=='image-rx-r4-experimental-ota'
+ assert report['kind'] in ('image-rx-r4-experimental-ota','ANIM60-offline-experimental-candidate')
+ animation=report['kind']=='ANIM60-offline-experimental-candidate'
+ if animation:
+  profile=report['animationProfile']
+  assert (profile['width'],profile['height'],profile['sourceFrames'],profile['targetCanvasFPS'])==(192,176,12,60)
  native_eight=report.get('menuProfile')=='native-eight-v1'
  native_nine=report.get('menuProfile')=='native-nine-TDP1-and-TNV1'
  native_carousel=native_eight or native_nine
@@ -45,6 +49,11 @@ def audit(folder):
   p=line.split()
   if len(p)>=3:syms[p[0]]=int(p[2],16)
  assert not subprocess.check_output(['llvm-nm','-u',str(folder/'generated/menu8-experiment.elf')]).strip()
+ if animation:
+  start=syms['ta_asset']-BASE;size=192*176*12
+  assert start%64==0 and len(new[start:start+size])==size
+  assert sha(new[start:start+size])==profile['assetSHA256']=='f758dd6e3cdf5fc6550238df26e46111e9d45d098b9d95f649626ea58210ee1d'
+  assert arm['animationSubmissionsInEmulatedSecond']==60 and arm['embeddedAssetReadback']
  md=capstone.Cs(capstone.CS_ARCH_ARM,capstone.CS_MODE_THUMB);md.detail=True
  allowed=set();patches=[]
  def branch(at,target,n,kind):
