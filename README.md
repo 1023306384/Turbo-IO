@@ -4,15 +4,53 @@
 
 原创代码仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。发布源码与明确列出的依赖，另在 Release 提供下述原厂砸壳 IPA 作为 iOS 扩展输入。**不提供已合并 Turbo IO 的 IPA / APK / HAP 成品包、个人预签名 App、签名证书、个人密钥或测试账号**。需要自行配置、编译和签名。
 
-[新增音乐应用](#music-app) · [微信读书研究思路](docs/WEREAD_RESEARCH.md) · [显示与导航](#native-apps) · [功能对比](#各端功能对比) · [AI 帮你接入](#让-claude-code--codex-帮你接入) · [V1 快速开始](#快速开始) · [Roadmap](#roadmap)
+**文档更新：2026-09-24** · 日期表示文档整理或所注明的实测记录，不代表当天全量回归。
 
-### 微信读书研究：四本书架与原生阅读页
+**[☕ 支持项目 · 微信捐赠](#support)**
+
+[选择平台](#先选开发路线) · [近期更新](#updates) · [功能对比](#各端功能对比) · [AI 帮你接入](#让-claude-code--codex-帮你接入) · [V1 快速开始](#快速开始) · [Web 预览](#web-显示预览与观察台) · [Roadmap](#roadmap) · [许可与隐私](#隐私与许可)
+
+## 先选开发路线
+
+| 路线 | 适合什么需求 | 使用文档 |
+| --- | --- | --- |
+| iOS 独立 SDK（V1） | 自己配对、连接眼镜，研究完整客户端 | [本页快速开始](#快速开始) |
+| iOS 官方 App 扩展（V2） | 保留官方连接/ASR，加入模型、导出、新闻、导航 | [iOS 扩展教程](official-addon/README.md) |
+| Android 官方 App 扩展 | 保留 Android 官方流程，加入模型、TinyFish、录音导出、真实/模拟导航 | [Android 编译、配置与导航教程](android-addon/README.md) |
+| 原生鸿蒙 HarmonyOS SDK / 客户端 | 鸿蒙 HarmonyOS 6.1 实测：直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | [鸿蒙 HarmonyOS 从源码安装与配置](harmony-sdk/README.md) |
+
+**连接前先分清路线：** V1 与鸿蒙独立客户端首次切换前，要先在官方 App 解绑、在原手机系统蓝牙忽略设备；iOS / Android 官方扩展运行在宿主内，沿用宿主连接，不需要为扩展反复解绑。不能同时让独立客户端和官方宿主争抢连接。
+
+只想看界面，可先运行 [Web 预览](#web-显示预览与观察台)，无需手机或服务 Key。普通 SDK/App 开发不需要刷固件；下方眼镜端应用实验是独立的高风险路线。
+
+<a id="updates"></a>
+
+## 近期更新与眼镜端应用
+
+按日期倒序整理；每项单独标注公开范围与验收边界。
+
+| 日期 | 更新 | 公开范围 |
+| --- | --- | --- |
+| 2026-09-24 | [微信读书：四本书架与阅读页](#weread-research) | 思路与参考项目；不含 TWR1 源码、固件或网页适配 |
+| 2026-09-23 | [网易云音乐：第十项菜单](#music-app) | TMU1 源码、配套手机代码与实测实验固件 |
+| 2026-09-22 | [Turbo Display 与原生导航](#native-apps) | TDP1/TNV1 源码、配套手机代码与匹配固件 |
+| 2026-09-22 | [ANIM60 本地动图](#animation-test) | 动图实验源码与独立固件候选；非通用动图上传 |
+
+> **自定义固件是试验用品，非开发者请勿刷。** AP 改动仍可能导致无法启动或失去 OTA；不要混用不同候选的固件、手机门禁或授权。原厂回滚不是救砖保证。实机成功不等于生产稳定版。
+
+<a id="weread-research"></a>
+
+### 2026-09-24 · 微信读书研究：四本书架与原生阅读页
 
 分享“手机获取内容、处理封面和分页，眼镜显示四本书架与有界正文窗口”的[实现思路及参考项目](docs/WEREAD_RESEARCH.md)。书架/统计可参考 [Tencent/WeChatReading](https://github.com/Tencent/WeChatReading)，网页阅读可研究 [finlater/weread.koplugin](https://github.com/finlater/weread.koplugin)；后者是独立的 AGPL KOReader 插件，不是雷鸟插件。**本次只公开说明，不发布网页正文适配、TWR1 源码/固件或任何 Cookie/Key；不是公开构建已具备该能力的声明。私用研究版已知问题：长按旋钮返回书架可能异常。**
 
+![微信读书界面效果示意：菜单入口、同步提示、四本书架与阅读页](docs/screenshots/weread-ui-concept.jpg)
+
+*界面效果示意（用户提供）：展示菜单、同步提示、四本书架与阅读布局，不作为实机验收证据；图中书籍、文字、页码和速度仅为示例，具体交互以研究说明为准。*
+
 <a id="music-app"></a>
 
-## 新增：网易云音乐 · 眼镜第十项菜单
+### 2026-09-23 · 网易云音乐：眼镜第十项菜单
 
 **2026-09-23 研究机实测通过**：配套 iOS 播放器有声音、封面和歌词；眼镜显示旋转专辑封面与**五行歌词，当前句始终在中间高亮**，暂停/继续、切歌、拖动进度同步正常。手机发起播放与眼镜反向请求均有代码支持；不保证 App 被系统终止后能自动拉起。
 
@@ -27,7 +65,7 @@
 
 <a id="native-apps"></a>
 
-## 本次升级：Turbo Display + 原生导航应用
+### 2026-09-22 · Turbo Display 与原生导航应用
 
 **这次不只是“把导航测试文字发到眼镜”，而是在眼镜端增加了独立的导航应用页面。** **Turbo Display 保留为开发者的传图／显示测试工具，不是面向日常使用的显示应用**；新增导航则是拥有独立菜单入口、布局和运行状态的应用页面。两者定位不同。
 
@@ -39,7 +77,7 @@
 | 显示内容 | 当前 512×128 灰度画布；镜片呈现绿色单色图像 | 540×180 布局：方向箭头、距离、路名、剩余信息、路线示意图 |
 | 适合什么场景 | 开发调试、测试图与协议验收；不是日常应用或视频投屏 | 持续变化的导航指引，无需每次传一整张导航图片 |
 
-### 新增导航应用，不再依赖旧测试页面
+#### 导航应用：独立入口与原生绘制
 
 - **独立入口与生命周期**：眼镜菜单中有“导航”；手机开始后可主动打开，不必每次先去官方字幕或提词器操作一遍。
 - **眼镜端原生绘制**：内置转向图标、文字与路线示意图。手机只发导航数据，单次完整快照最多 **328 B**，减少旧传图方案的带宽负担；这不是无延迟保证。
@@ -53,7 +91,9 @@
 
 **TNV1 匹配版本已公开：** [下载高风险固件 Pre-release](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-tnv1) · [完整源码、构建与手机合并](firmware-research/strix-1.0.4.12/native-navigation/BUILD.md) · [升级、导航与传图测试说明](firmware-research/strix-1.0.4.12/native-navigation/USAGE.md)。此包保留 **Turbo Display 测试工具**并新增**独立原生导航应用**，含配套 iOS 1.0.5（201）源码与后台修复；仅 AP 内容变化，另13项不变。使用自己的配置和签名，不提供合并后 IPA。旧 R3 Release 不含这两项，不能混用。**非开发者请勿刷；实机成功不代表不会变砖或保证救砖。**
 
-### ANIM60：在眼镜端本地播放动图
+<a id="animation-test"></a>
+
+### 2026-09-22 · ANIM60：眼镜端本地动图实验
 
 ANIM60 是基于相同 Strix OS 1.0.4.12 的**另一份实验 AP**：复用第八项 Turbo Display，内置 12 帧素材、在眼镜端定时绘制，手机无需逐帧传输。2026-09-22 研究机已刷入，用户确认动画播放，30 秒结束计数 1799 次提交；这是约 60 次/秒的**提交计数**，不是物理面板 60 FPS 的测量，也未证明长期热稳定或全部情形无丢帧。它不是 GIF 上传器或面向普通用户的动画 App。
 
@@ -91,17 +131,6 @@ ANIM60 是基于相同 Strix OS 1.0.4.12 的**另一份实验 AP**：复用第�
 - 普通 App Store 加密 IPA 仍不能直接合并；未知版本必须通过兼容性检查。项目不提供代砸壳或代签名服务。
 
 </details>
-
-## 先选开发路线
-
-| 路线 | 适合什么需求 | 使用文档 |
-| --- | --- | --- |
-| iOS 独立 SDK（V1） | 自己配对、连接眼镜，研究完整客户端 | [本页快速开始](#快速开始) |
-| iOS 官方 App 扩展（V2） | 保留官方连接/ASR，加入模型、导出、新闻、导航 | [iOS 扩展教程](official-addon/README.md) |
-| **Android 官方 App 扩展** | 保留 Android 官方流程，加入模型、TinyFish、录音导出、真实/模拟导航 | **[Android 编译、配置与导航教程](android-addon/README.md)** |
-| **原生鸿蒙 HarmonyOS SDK / 客户端** | 鸿蒙 HarmonyOS 6.1 实测：直接连接眼镜，自有 ASR/模型、天气、待办、自定义卡片与导航 | **[鸿蒙 HarmonyOS 从源码安装与配置](harmony-sdk/README.md)** |
-
-**别混用配对说明：** V1 与鸿蒙独立客户端首次切换前，要先在官方 App 解绑、在原手机系统蓝牙忽略设备；iOS / Android 官方扩展运行在宿主内，沿用宿主连接，不需要为扩展反复解绑。不能同时让独立客户端和官方宿主争抢连接。
 
 ## 各端功能对比
 
@@ -188,7 +217,7 @@ Key由我在本机安全填写，不索取聊天明文、不复用维护者配�
 
 ## 版本与历史进展
 
-本次显示/原生导航升级见[顶部功能介绍](#native-apps)。以下保留其他平台的历史适配记录。
+近期功能按日期整理在[更新区](#updates)。以下保留各平台的历史适配记录，不代表本次重新验收。
 
 <details>
 <summary>展开 iOS / Android / HarmonyOS 版本记录</summary>
@@ -203,7 +232,7 @@ Key由我在本机安全填写，不索取聊天明文、不复用维护者配�
 
 </details>
 
-模型 Key、搜索 Key、TTS 云端 Key、个人提示词与私有知识库由使用者自己配置；本机 TTS 不需要服务 Key。二进制例外仅限上方原厂砸壳 IPA，以及独立标注警告的 R3、TNV1、ANIM60 实验固件/原厂内容基线 Release；不提供合并后手机成品包或个人签名材料。固件中的原厂代码/资源版权不变，实验附件不是官方升级推荐；未知二进制版本不得跳过兼容检查。iOS 详细版本/UUID见 [V2文档](official-addon/README.md#1-兼容性门槛)，Android输入校验见 [Android文档](android-addon/README.md#2-兼容与安装边界)。
+模型 Key、搜索 Key、TTS 云端 Key、个人提示词与私有知识库由使用者自己配置；本机 TTS 不需要服务 Key。二进制例外仅限上方原厂砸壳 IPA，以及独立标注警告的 R3、TNV1、ANIM60、TMU1 实验固件/原厂内容基线 Release；不提供合并后手机成品包或个人签名材料。固件中的原厂代码/资源版权不变，实验附件不是官方升级推荐；未知二进制版本不得跳过兼容检查。iOS 详细版本/UUID见 [V2文档](official-addon/README.md#1-兼容性门槛)，Android输入校验见 [Android文档](android-addon/README.md#2-兼容与安装边界)。
 
 ### 按需阅读
 
@@ -221,7 +250,7 @@ An unofficial RayNeo iO smart glasses SDK for developers, with a sample iOS clie
 
 > 本项目仅面向懂 iOS 开发、签名、API 配置与基本调试的技术用户，用于互操作研究。如果希望开箱即用、不熟悉这些操作，请使用官方 App。部分功能仍在验证，欢迎一起研究和补充实测，不承诺替代官方 App 的全部功能。
 
-## 界面截图
+### 界面截图
 
 以下为项目实际运行截图：手机使用无账号、无密钥的隔离模拟器页面；Web 使用明确标注的样式演示数据。不是眼镜像素截图，也不表示截图时已经连接眼镜。
 
@@ -230,7 +259,7 @@ An unofficial RayNeo iO smart glasses SDK for developers, with a sample iOS clie
   <img src="docs/screenshots/app-tools.png" width="290" alt="Turbo IO 雷鸟 iO 工具箱，显示观察与 Agent 工具入口" />
 </p>
 
-## Web 显示预览与观察台
+### Web 显示预览与观察台
 
 源码包含浏览器端显示观察工具，方便研究雷鸟 iO 的页面状态与双向事件：
 
@@ -253,7 +282,7 @@ node display-observer/server.mjs --no-proxy
 
 ![RayNeo iO Web 菜单预览：每页一个应用图标，当前为录音](docs/screenshots/web-menu.png)
 
-## 可以做什么
+### 可以做什么
 
 **以下能力表属于 V1 iOS 研究版；Android 官方扩展的范围与验收见 [Android 文档](android-addon/README.md)。**
 
@@ -264,7 +293,7 @@ node display-observer/server.mjs --no-proxy
 - 以眼镜作为 Agent 的语音输入与结果显示入口。目前实际打通的是 **Codex**，其他 Agent 需要开发适配器，状态见下表。
 - 通过 USB + Web 观察协议回报的页面/状态，辅助研究双向交互；这不是眼镜截图。
 
-## Agent 接入：已实现与可扩展
+### Agent 接入：已实现与可扩展
 
 | Agent | 当前状态 | 接入思路 |
 | --- | --- | --- |
@@ -276,15 +305,15 @@ node display-observer/server.mjs --no-proxy
 
 扩展方向依据各项目公开入口提出，**不等于本仓库已经内置或验证这些适配**。参考：[Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview)、[Hermes Agent](https://github.com/NousResearch/hermes-agent)、[OpenClaw Gateway](https://docs.openclaw.ai/gateway/protocol)。各服务账号、权限、费用和适用条款由用户自行配置与确认；不能只把名称换成另一个 Agent 就直接运行。
 
-## 不可以做什么
+### 不可以做什么
 
-### 为什么不像 Android 眼镜那样自由定制？
+#### 为什么不像 Android 眼镜那样自由定制？
 
 本项目研究的雷鸟 iO 使用 **BES2800** 平台，走的是低功耗、轻量嵌入式固件路线，而不是完整的 Android 应用系统。可以把它理解为“随身输入与显示终端”：眼镜负责唤醒、音频和内置界面，手机/云端/电脑承担更复杂的识别、模型与 Agent 任务。它不是一台能随意安装 APK、替换 Launcher、运行任意 Android 界面的微型手机。
 
 在**原厂固件路线**中，主要通过协议给眼镜自带模板填入内容和发送控制指令。**自定义 AP 路线**则已新增 Turbo Display 和原生导航，证明可以扩展眼镜端绘制与应用页面；两条路线的前提和风险不同。**限制来自当前固件和可用通信接口，不能简单归结为 BES2800 完全没有图形能力。** 恒玄对 BES2800 系列的定位也是超低功耗可穿戴计算平台；系列不同型号的可选规格不代表这副眼镜全部具备。芯片背景见[恒玄官方介绍](https://www.bestechnic.com/en/content/2.html)。
 
-### 当前边界
+#### 当前边界
 
 - **日常 SDK/App 不能通过普通协议任意替换眼镜固件内置 UI，也不是刷机/自定义桌面工具。** 除自定义通知外，研究中已验证有限 A2UI 仪表盘文字/布局卡片；鸿蒙当前验证到短文字卡。独立的[自定义 AP 应用路线](docs/TURBO_DISPLAY_NAVIGATION.md)已实现传图与原生导航，但不等于 HTML/Canvas 运行时或通用第三方 App 安装。
 - 原厂固件上的对话、待办、提词器、天气等主要通过已有模板下发内容；这不否定自定义固件中的新增绘制页面，但也不代表原厂所有模板均可任意修改。Web 预览样式也不会变成镜片固件 UI。
@@ -294,9 +323,9 @@ node display-observer/server.mjs --no-proxy
 
 未完成或仍有问题的功能会继续标注，不把成功回执当作镜片验收。欢迎提交脱敏日志、复现步骤和 PR；请勿上传自己的 Key、录音、聊天、设备标识或他人的私人数据。
 
-## 快速开始
+### 快速开始
 
-### 用 Codex / Claude Code 技能引导安装
+#### 用 Codex / Claude Code 技能引导安装
 
 已安装 Node.js 和相应编程助手的用户，可以用一行命令安装 `turbo-io` 技能（用户级，同时面向 Codex 与 Claude Code）：
 
@@ -308,9 +337,9 @@ DISABLE_TELEMETRY=1 npx --yes skills@1.5.24 add Turbo1123/Turbo-IO --skill turbo
 
 技能会检查环境、获取源码、启动预览，再按需指导 iOS 编译、服务配置与 Codex bridge。**一行安装的是技能，不是已签名 iPhone App**：真机仍需自己的 Xcode 签名、配对和服务 Key。支持 Claude Code 使用技能，不等于已经实现眼镜的 Claude Code 后端适配。[完整说明与手动安装](docs/AGENT_SKILL.md)。
 
-### 连接前必读：先解绑，再忽略蓝牙设备
+#### 连接前必读：先解绑，再忽略蓝牙设备
 
-**首次使用 Turbo IO，或从官方 App 切换过来时，务必先完成以下步骤，再尝试连接：**
+**仅针对 V1 独立客户端从官方 App 切换的首次配对；官方 App 扩展不需要为扩展解绑。使用 V1 前务必先完成以下步骤，再尝试连接：**
 
 1. 在雷鸟官方 App 内对这副眼镜执行“解绑”，确认解绑完成；仅关闭官方 App 不等于解绑。
 2. 打开手机“设置 → 蓝牙”，找到对应的雷鸟眼镜，进入设备详情并选择“忽略此设备”，清除旧配对记录。
@@ -318,7 +347,7 @@ DISABLE_TELEMETRY=1 npx --yes skills@1.5.24 add Turbo1123/Turbo-IO --skill turbo
 
 不要让官方 App 与 Turbo IO 同时连接或抢连同一副眼镜。已经绑定到 Turbo IO 后的日常重连，不需要每次重复解绑、忽略或重置。只用模拟器预览的用户无需操作眼镜。
 
-### 编译运行
+#### 编译运行
 
 准备 macOS、Xcode、XcodeGen、Node.js 和一个可用模拟器，在源码根目录运行：
 
@@ -336,7 +365,7 @@ node scripts/start.mjs --device
 
 设备版所需的现有厂商 framework、Opus 静态库/头文件和 WebRTC VAD 编译源码已经随工程提供，版本清单见 `DEPENDENCIES.json`。脚本预检依赖并重新生成恢复接口声明模块；缺文件会明确列出。在 Xcode 选择 `RayNeoCompanionDevice`，设置自己的 Team，连接自己的 iPhone 编译运行。具体步骤与 API 配置见 [配置与启动](docs/CONFIGURATION.md)。
 
-## 配置后怎么使用
+### 配置后怎么使用
 
 1. 从官方 App 切换时先完成上面的解绑、忽略蓝牙设备与重新配对；已绑定 Turbo IO 的眼镜在设备页重连/认证即可，别反复重置。
 2. 在语音服务页填写自己的 ASR Host / Key 与 DeepSeek Key，再选择启用待命。
@@ -346,7 +375,7 @@ node scripts/start.mjs --device
 
 源码无默认开发者租户或凭据；用户提供的服务必须支持当前已实现的协议/模型，不承诺随意换一个 API 名称就兼容。iPhone 当前目标 iOS16+，独立公共传输包需要Swift6.2+工具链。
 
-## 能力与边界
+### 能力与边界
 
 | 能力 | 状态 |
 | --- | --- |
@@ -417,7 +446,7 @@ xcrun swift test --package-path rayneo-session
 
 更多步骤见[配置文档](docs/CONFIGURATION.md)。本地通过、普通签名、真实镜片与非越狱验收分别记录；不使用含开发者录音或账号的fixture。
 
-本次源码交付的编译与测试记录见 [交付验证](docs/VALIDATION.md)。
+已有源码交付的编译与测试记录见 [交付验证](docs/VALIDATION.md)；本次 README 整理未重新执行各平台编译与真机测试。
 
 ## 隐私与许可
 
@@ -426,6 +455,8 @@ xcrun swift test --package-path rayneo-session
 当前有权授权的原创内容采用 [PolyForm Noncommercial 1.0.0](LICENSE)，用于非商业学习研究；未经授权不得商用或收费分发。历史 MIT 权利不追溯撤销，详见[许可说明](docs/LICENSING.md)。第三方组件及厂商通信库不因随工程使用而变更许可，具体归属见 [第三方说明](THIRD_PARTY_NOTICES.md)。本工程与设备厂商无官方隶属关系。
 
 发布不包含个人录音、聊天、凭据、绑定数据库、原始日志、私有临时隧道配置、个人开发者签名或预签名 App。Release 中单独列出的原厂砸壳 IPA 不含 Turbo IO 扩展，也不适用本仓库原创源码许可证。详见[源码发布说明](docs/SOURCE_RELEASE.md)；旧文档中“不提供 IPA”的一概表述，以本页明确列出的原厂 IPA 例外为准，其他隐私和签名边界保持不变。
+
+<a id="support"></a>
 
 ## 请我喝杯咖啡 ☕
 
