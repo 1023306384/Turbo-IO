@@ -4,7 +4,11 @@
 
 原创代码仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。发布源码与明确列出的依赖，另在 Release 提供下述原厂砸壳 IPA 作为 iOS 扩展输入。**不提供已合并 Turbo IO 的 IPA / APK / HAP 成品包、个人预签名 App、签名证书、个人密钥或测试账号**。需要自行配置、编译和签名。
 
-[新增音乐应用](#music-app) · [显示与导航](#native-apps) · [功能对比](#各端功能对比) · [AI 帮你接入](#让-claude-code--codex-帮你接入) · [V1 快速开始](#快速开始) · [Roadmap](#roadmap)
+[新增音乐应用](#music-app) · [微信读书研究思路](docs/WEREAD_RESEARCH.md) · [显示与导航](#native-apps) · [功能对比](#各端功能对比) · [AI 帮你接入](#让-claude-code--codex-帮你接入) · [V1 快速开始](#快速开始) · [Roadmap](#roadmap)
+
+### 微信读书研究：四本书架与原生阅读页
+
+分享“手机获取内容、处理封面和分页，眼镜显示四本书架与有界正文窗口”的[实现思路及参考项目](docs/WEREAD_RESEARCH.md)。书架/统计可参考 [Tencent/WeChatReading](https://github.com/Tencent/WeChatReading)，网页阅读可研究 [finlater/weread.koplugin](https://github.com/finlater/weread.koplugin)；后者是独立的 AGPL KOReader 插件，不是雷鸟插件。**本次只公开说明，不发布网页正文适配、TWR1 源码/固件或任何 Cookie/Key；不是公开构建已具备该能力的声明。私用研究版已知问题：长按旋钮返回书架可能异常。**
 
 <a id="music-app"></a>
 
