@@ -1,4 +1,4 @@
-name: Build iOS IPA
+.name: Build iOS IPA
 on:
   workflow_dispatch:
 jobs:
@@ -12,16 +12,9 @@ jobs:
         run: |
           cd apps/RayNeoCompanion
           sed -i '' 's/RayNeoProtocol1/RayNeoProtocol/g' project-device.yml
-          sed -i '' '/dependencies:/a\
-            - framework: ../../core-probe/Frameworks/RayneoNet.framework\
-            - framework: ../../core-probe/Frameworks/RayneoLog.framework\
-            - framework: ../../core-probe/Frameworks/CocoaAsyncSocket.framework\
-            - framework: ../../core-probe/Frameworks/CocoaLumberjack.framework\
-            - framework: ../../core-probe/Frameworks/OpenSSL.framework\
-            - framework: ../../core-probe/Frameworks/SSZipArchive.framework\
-            - framework: ../../core-probe/Frameworks/SwiftProtobuf.framework
-          ' project-device.yml
-          cat project-device.yml
+          sed -i '' '/^  - framework:/d' project-device.yml
+          sed -i '' '/^  - package:/d' project-device.yml
+          cat project-device.yml | head -60
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project
@@ -46,3 +39,5 @@ jobs:
         with:
           name: TurboIO-iOS
           path: TurboIO-iOS.ipa
+
+          
