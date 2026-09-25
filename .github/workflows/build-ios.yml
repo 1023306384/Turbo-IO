@@ -12,8 +12,8 @@ jobs:
         run: |
           cd apps/RayNeoCompanion
           sed -i '' 's/RayNeoProtocol1/RayNeoProtocol/g' project-device.yml
-          sed -i '' '/^  - framework:/d' project-device.yml
           sed -i '' '/^  - package:/d' project-device.yml
+          sed -i '' 's/^  - framework:/      - framework:/' project-device.yml
           cat project-device.yml | head -60
       - name: Install XcodeGen
         run: brew install xcodegen
