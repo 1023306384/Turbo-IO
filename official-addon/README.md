@@ -8,6 +8,8 @@
 
 ## 可选高风险固件研究构建
 
+**2026-09-25 新增 [FOCUS-04 集成版](focus-edition/README.md)**：新版插件 UI、四项同屏菜单、微信读书本地正文、音乐交互修复与原生番茄时钟。使用独立源码目录及 `--experimental-ota TFP1` 打包入口，固定匹配 FOCUS-04 固件；不要与下方旧版本宏、源码或固件混用。普通插件开发无需刷固件。
+
 **另有无需刷固件的 [iOS 26+ 本地翻译与英语离线字幕](local-translation/README.md)**：Apple / Hy-MT2、Parakeet 英语 ASR、手机/蓝牙麦克风、快速预译与镜片文字同步。`TIO_LOCAL_TRANSLATION=1` 显式编译；需自行下载模型、准备系统语言包、打包签名，不包含维护者配置。前台采集、20分钟保护，不等于眼镜前方/四周定向收音或全面替换官方翻译页。
 
 **微信读书 TWR1：** [原创 AP、书架/本地阅读手机模块、固件与构建说明](../firmware-research/strix-1.0.4.12/native-navigation/weread/README.md) · [架构与参考项目](../docs/WEREAD_RESEARCH.md)。不含网页正文适配或 Cookie；公开手机模块尚未接入本页默认构建与 TWR1 打包门禁。长按旋钮返回可能异常；没有匹配手机集成请先别刷，不要使用下面的音乐/导航授权代替阅读固件。

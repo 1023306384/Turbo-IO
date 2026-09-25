@@ -51,6 +51,10 @@ const reviewedAnimationAssets=new Map([
 ].map(([p,h])=>[animationAssets+p,h]));
 
 // Values are never printed. Regex scanning is a release gate, not a guarantee.
+// Explicit reviewed FOCUS-04 art and byte-identical copies of public animation assets.
+const focusReview=JSON.parse(fs.readFileSync(new URL('./focus-reviewed-assets.json',import.meta.url),'utf8'));
+for(const [p,h] of Object.entries(focusReview.media))reviewedScreenshots.set(p,h);
+for(const [p,h] of Object.entries(focusReview.largeText))reviewedLargeSources.set(p,h);
 export function audit(root){
   const findings=[];let files=0;
   const rules=[

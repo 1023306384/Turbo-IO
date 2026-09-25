@@ -4,7 +4,13 @@
 
 原创代码仅供学习、研究与非商业使用，沿用 [PolyForm Noncommercial 1.0.0](LICENSE)，未经授权不得商用或收费分发。发布源码与明确列出的依赖，另在 Release 提供下述原厂砸壳 IPA 作为 iOS 扩展输入。**不提供已合并 Turbo IO 的 IPA / APK / HAP 成品包、个人预签名 App、签名证书、个人密钥或测试账号**。需要自行配置、编译和签名。
 
-**文档更新：2026-09-24** · 日期表示文档整理或所注明的实测记录，不代表当天全量回归。
+**文档更新：2026-09-25** · 日期表示文档整理或所注明的实测记录，不代表当天全量回归。
+
+![Turbo IO 中秋焕新：全新 UI、四项菜单与微信读书、网易云音乐、原生番茄时钟](docs/screenshots/midautumn-update-wide-20260925.png)
+
+**[中秋更新：FOCUS-04 源码与实验固件](firmware-research/strix-1.0.4.12/native-navigation/focus/README.md)** · [新版插件 UI / 配置与编译](official-addon/focus-edition/README.md) · [查看完整更新长海报](docs/screenshots/midautumn-update-20260925.png)
+
+*横版为界面效果示意，不是镜片实拍；微信读书公开版正文需自行合法导入。实验固件有风险，非开发者请勿刷。*
 
 **[☕ 支持项目 · 微信捐赠](#support)**
 
@@ -31,6 +37,7 @@
 
 | 日期 | 更新 | 公开范围 |
 | --- | --- | --- |
+| 2026-09-25 | [重磅更新：新 UI、四项菜单、原生番茄时钟](#focus-update) | FOCUS-04 原创源码、配套 iOS 插件与精确实刷实验固件；不含私人配置或网页正文适配 |
 | 2026-09-24 | [本地翻译与英语离线字幕](#local-translation) | Apple / Hy-MT2 / Parakeet 源码、模型下载与可选 iOS 构建；不含权重或密钥 |
 | 2026-09-24 | [微信读书：四本书架与阅读页](#weread-research) | TWR1 原创模块、构建工具与实刷实验固件；不含网页正文适配 |
 | 2026-09-23 | [网易云音乐：第十项菜单](#music-app) | TMU1 源码、配套手机代码与实测实验固件 |
@@ -38,6 +45,30 @@
 | 2026-09-22 | [ANIM60 本地动图](#animation-test) | 动图实验源码与独立固件候选；非通用动图上传 |
 
 > **自定义固件是试验用品，非开发者请勿刷。** AP 改动仍可能导致无法启动或失去 OTA；不要混用不同候选的固件、手机门禁或授权。原厂回滚不是救砖保证。实机成功不等于生产稳定版。
+
+<a id="focus-update"></a>
+
+### 2026-09-25 · 中秋重磅更新：全新 UI 与 FOCUS-04
+
+1. **菜单重构**：眼镜菜单四项同屏，明显选中框，左上角时间与电量；详情页不再残留菜单滚动指示器。
+2. **修复遗留固件问题**：优化音乐旋钮轻触误切歌、文字边距、微信读书长按返回/退出与番茄页面重叠。
+3. **新增原生番茄时钟应用**：眼镜第十二项菜单，手机双向控制，短按暂停/继续、长按停止；息屏继续计时、到时空闲提醒，避免长期亮屏打扰。
+4. **Turbo IO 插件 UI 焕新**：首页眼镜动效、音乐/微信读书/导航/番茄卡片，整理内页与设置；只改自己的插件，不重做官方 App。
+
+**[FOCUS-04 固件与构建校验](firmware-research/strix-1.0.4.12/native-navigation/focus/README.md)** · **[配套手机构建和使用](official-addon/focus-edition/README.md)** · **[下载实验固件](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-tfp1-focus04)**
+
+基于 Strix OS 1.0.4.12，仅 AP 内容变化，其他 13 个固件负载不变；AP **9,558,216 字节**，低于 9,600,000 字节限制。2026-09-25 用户实刷并确认此版正常；仍是试验用品，不代表全场景稳定、不会变砖或可保证救砖。配套宿主为雷鸟 AI **iOS 1.0.5（201）**，不可与旧包/门禁混用。
+
+<details>
+<summary>查看首页、番茄时钟与音乐单独效果图</summary>
+
+<img src="docs/screenshots/focus-home-ui-20260925.png" width="300" alt="Turbo IO 新首页模拟器界面" />
+
+![番茄时钟设计效果](docs/screenshots/focus-design-20260925.png)
+![网易云音乐界面设计效果](docs/screenshots/music-design-20260925.png)
+
+首页为模拟环境界面；番茄与音乐为设计效果，不作为实机像素一致性或完整验收证据。
+</details>
 
 <a id="local-translation"></a>
 
@@ -51,11 +82,13 @@
 
 ### 2026-09-24 · 微信读书研究：四本书架与原生阅读页
 
-**新增第十一项“微信读书”研究菜单：四本封面书架、原生文本窗口与手动/自动滚动。** 已公开[原创 AP / 手机模块、构建与协议说明](firmware-research/strix-1.0.4.12/native-navigation/weread/README.md)，以及 [TWR1 实刷实验固件](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-twr1)。源码重建 AP 与实刷版本一致，仅 AP 改变，其他13个负载不变。**已知问题：长按旋钮返回书架可能异常。非开发者请勿刷，不保证回滚或救砖。**
+**新增第十一项“微信读书”研究菜单：四本封面书架、原生文本窗口与手动/自动滚动。** 已公开[原创 AP / 手机模块、构建与协议说明](firmware-research/strix-1.0.4.12/native-navigation/weread/README.md)，以及 [TWR1 实刷实验固件](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-twr1)。源码重建 AP 与实刷版本一致，仅 AP 改变，其他13个负载不变。**旧 TWR1 的长按返回问题在 09-25 FOCUS-04 中加入修复，旧 Release 不变。非开发者请勿刷，不保证回滚或救砖。**
 
 手机模块公开书架/统计、封面处理、TXT/EPUB 导入及阅读传输，**不含网页正文适配、Cookie、Key 或私用 IPA，也尚未接入主仓库默认构建及 TWR1 OTA 打包入口**；没有自己的匹配手机集成时先别刷。这不是“下载源码就能直接读取所有微信读书正文”的声明。书架/统计参考 [Tencent/WeChatReading](https://github.com/Tencent/WeChatReading)，网页阅读可自行研究 AGPL 项目 [finlater/weread.koplugin](https://github.com/finlater/weread.koplugin)。[架构思路与许可范围](docs/WEREAD_RESEARCH.md)
 
 ![微信读书界面效果示意：菜单入口、同步提示、四本书架与阅读页](docs/screenshots/weread-ui-concept.jpg)
+
+上述集成限制针对历史 TWR1；09-25 新增的 [FOCUS-04 可选集成版](official-addon/focus-edition/README.md)已提供匹配的构建与 TFP1 打包入口。网页正文适配仍未公开，本机 TXT/EPUB 导入范围不变。
 
 *界面效果示意（用户提供）：展示菜单、同步提示、四本书架与阅读布局，不作为实机验收证据；图中书籍、文字、页码和速度仅为示例，具体交互以研究说明为准。*
 
@@ -67,7 +100,7 @@
 
 - **新增第十项音乐菜单**，保留原七项、第八项 Turbo Display/ANIM60 和第九项原生导航。
 - 手机负责获取可播放歌曲、封面和歌词以及播放音频；眼镜 AP 原生绘制，不持续传整屏截图。可选常亮 / 30秒 / 60秒显示。
-- **已知问题：眼镜旋钮过于灵敏，轻碰可能误切歌。此版保留该问题，尚未修复。** 暂时可用手机控制。扫码登录可能报“环境异常”，本次用未登录可播放歌曲验收，不绕过风控、会员或版权限制。
+- **旧 TMU1 已知问题：轻碰旋钮可能误切歌。09-25 FOCUS-04 已加入输入过滤与去抖，旧 Release 不变。** 扫码登录可能报“环境异常”，本次用未登录可播放歌曲验收，不绕过风控、会员或版权限制。
 - 适配 **雷鸟 AI iOS 1.0.5（201）+ Strix OS 1.0.4.12**，Android / HarmonyOS 暂未接入此音乐播放器。
 
 **[完整教程：构建、签名、试刷、播放与协议](firmware-research/strix-1.0.4.12/native-navigation/music/README.md)** · **[下载 TMU1 实测固件 Pre-release](https://github.com/Turbo1123/Turbo-IO/releases/tag/firmware-strix-1.0.4.12-tmu1)**。发布源码、精确实测固件及校验工具，不提供合并 IPA、个人签名、Key、账号或 Cookie。

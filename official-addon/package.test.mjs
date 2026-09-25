@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {validateOptions,entitlementsFor,validateResearchPair} from './package.mjs';
 const o={app:'/example/Runner.app',addon:'/example/addon.dylib',profile:'/example/profile.mobileprovision',out:'/example/new-output',identity:'A'.repeat(40),device:'synthetic-device',bundle:'com.example.test'};
 test('experimental firmware packaging is explicit and original bundle only',()=>{
@@ -29,4 +30,17 @@ test('TMU1 needs music and navigation symbols and exact new ZIP',()=>{
   for(const symbols of ['', '_TNVStart', '_TMMusicConsume'])assert.throws(()=>validateResearchPair(symbols,'TMU1',Buffer.alloc(0)));
   assert.throws(()=>validateResearchPair('_TNVStart _TMMusicConsume','TNV1',Buffer.alloc(0)));
   assert.throws(()=>validateResearchPair('_TNVStart _TMMusicConsume','TMU1',Buffer.alloc(9468398)));
+});
+
+test('TFP1 requires matching focus, music, navigation and exact release',()=>{
+ const n={...o,bundle:'com.rayneo.venus.pub','experimental-ota':'TFP1',firmware:'/example/FOCUS04.zip'};
+ validateOptions(n);assert.throws(()=>validateOptions({...n,firmware:undefined}));
+ const symbols='_TNVStart _TMMusicConsume _TFFocusConsume';
+ for(const wrong of ['','_TNVStart','_TNVStart _TMMusicConsume'])assert.throws(()=>validateResearchPair(wrong,'TFP1',Buffer.alloc(0)));
+ assert.throws(()=>validateResearchPair(symbols,'TMU1',Buffer.alloc(0)));
+ assert.throws(()=>validateResearchPair(symbols,'TFP1',Buffer.alloc(9300112)));
+ if(process.env.TIO_FOCUS_RELEASE_ZIP){
+  const b=fs.readFileSync(process.env.TIO_FOCUS_RELEASE_ZIP);validateResearchPair(symbols,'TFP1',b);
+  const bad=Buffer.from(b);bad[100]^=1;assert.throws(()=>validateResearchPair(symbols,'TFP1',bad));
+ }
 });
