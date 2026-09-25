@@ -1,4 +1,4 @@
-name: Build iOS IPA
+﻿name: Build iOS IPA
 on:
   workflow_dispatch:
 jobs:
@@ -12,6 +12,8 @@ jobs:
         run: |
           cd apps/RayNeoCompanion
           curl -sL "https://raw.githubusercontent.com/Turbo1123/Turbo-IO/main/apps/RayNeoCompanion/project-device.yml" -o project-device.yml
+          mkdir -p ../../core-probe/RecoveredInterface/build
+          xcrun swiftc -emit-module ../../core-probe/RecoveredInterface/RayneoNet.swift -o ../../core-probe/RecoveredInterface/build/RayneoNet.swiftmodule -sdk $(xcrun --sdk iphoneos --show-sdk-path) -target arm64-apple-ios16.0
           cat project-device.yml | head -60
       - name: Install XcodeGen
         run: brew install xcodegen
