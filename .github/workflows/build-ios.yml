@@ -10,10 +10,25 @@ jobs:
           submodules: recursive
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate and Build
-        run: cd apps/RayNeoCompanion && xcodegen generate --spec project-device.yml && xcodebuild -project RayNeoCompanion.xcodeproj -scheme RayNeoCompanionDevice -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build 2>&1 | tail -30
+      - name: Generate project
+        run: cd apps/RayNeoCompanion && xcodegen generate --spec project-device.yml
+      - name: List schemes
+        run: cd apps/RayNeoCompanion && xcodebuild -project RayNeoCompanion.xcodeproj -list
+      - name: Build
+        run: |
+          cd apps/RayNeoCompanion
+          set -o pipefail
+          xcodebuild -project RayNeoCompanion.xcodeproj -scheme RayNeoCompanionDevice -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Find app
+        run: find apps/RayNeoCompanion/build -name "*.app" -type d
       - name: Package IPA
-        run: cd apps/RayNeoCompanion/build/Build/Products/Release-iphoneos && mkdir -p Payload && cp -r RayNeoCompanion.app Payload/ && zip -r ../../../../TurboIO-iOS.ipa Payload/
+        run: |
+          APP_PATH=$(find apps/RayNeoCompanion/build -name "*.app" -type d | head -1)
+          echo "Found app at: $APP_PATH"
+          cd $(dirname $APP_PATH)
+          mkdir -p Payload
+          cp -r $(basename $APP_PATH) Payload/
+          zip -r ../../../../../TurboIO-iOS.ipa Payload/
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
