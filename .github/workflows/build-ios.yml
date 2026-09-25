@@ -28,12 +28,13 @@ jobs:
         run: find apps/RayNeoCompanion/build -name "*.app" -type d
       - name: Package IPA
         run: |
+          cd $GITHUB_WORKSPACE
           APP_PATH=$(find apps/RayNeoCompanion/build -name "*.app" -type d | head -1)
           echo "Found app at: $APP_PATH"
-          cd $(dirname $APP_PATH)
           mkdir -p Payload
-          cp -r $(basename $APP_PATH) Payload/
-          zip -r ../../../../../TurboIO-iOS.ipa Payload/
+          cp -r "$APP_PATH" Payload/
+          zip -r TurboIO-iOS.ipa Payload/
+          rm -rf Payload
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
