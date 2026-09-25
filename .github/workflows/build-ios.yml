@@ -1,4 +1,4 @@
-.name: Build iOS IPA
+name: Build iOS IPA
 on:
   workflow_dispatch:
 jobs:
@@ -39,5 +39,3 @@ jobs:
         with:
           name: TurboIO-iOS
           path: TurboIO-iOS.ipa
-
-          
