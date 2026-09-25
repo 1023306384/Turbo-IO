@@ -31,7 +31,18 @@ targets:
       - ../../core-probe/Sources/CloudASRHostSettings.swift
     dependencies:
       - package: ZIPFoundation
-      - package: RayNeoProtocol
+      - package: RayNeoProtocol1
+      
+  - package: RayNeoSession
+  - package: RayNeoArchive
+  - package: RayNeoAudioContainer
+  - framework: ../../core-probe/Frameworks/RayneoNet.framework
+  - framework: ../../core-probe/Frameworks/RayneoLog.framework
+  - framework: ../../core-probe/Frameworks/CocoaAsyncSocket.framework
+  - framework: ../../core-probe/Frameworks/CocoaLumberjack.framework
+  - framework: ../../core-probe/Frameworks/OpenSSL.framework
+  - framework: ../../core-probe/Frameworks/SSZipArchive.framework
+  - framework: ../../core-probe/Frameworks/SwiftProtobuf.framework
       - package: RayNeoDisplay
       - package: RayNeoSession
       - package: RayNeoArchive
