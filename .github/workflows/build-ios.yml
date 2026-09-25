@@ -8,11 +8,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Restore original config
-        run: git checkout c5bb9310016e0e3ff357105a95a6c0fd4c83bd5 -- apps/RayNeoCompanion/project-device.yml
-      - name: Add frameworks
+      - name: Fix config
         run: |
           cd apps/RayNeoCompanion
+          sed -i '' 's/RayNeoProtocol1/RayNeoProtocol/g' project-device.yml
           sed -i '' '/dependencies:/a\
             - framework: ../../core-probe/Frameworks/RayneoNet.framework\
             - framework: ../../core-probe/Frameworks/RayneoLog.framework\
@@ -22,6 +21,7 @@ jobs:
             - framework: ../../core-probe/Frameworks/SSZipArchive.framework\
             - framework: ../../core-probe/Frameworks/SwiftProtobuf.framework
           ' project-device.yml
+          cat project-device.yml
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project
